@@ -9,6 +9,7 @@ var db = (function(){
 	var conn = Titanium.Database.open('reunion');
 	
 	conn.execute('CREATE TABLE IF NOT EXISTS YEAR_SCHOOL  (YEAR INTEGER, SCHOOL TEXT)');
+	conn.execute('CREATE TABLE IF NOT EXISTS REG_CODE  (CODE INTEGER)');
 
 	conn.close();
 	
@@ -21,10 +22,11 @@ var db = (function(){
 
 	api.isFirstTime = function(){
 		var conn = Titanium.Database.open('reunion');
-		conn.execute('SELECT * FROM YEAR_SCHOOL');
-		Titanium.API.info('ROW COUNT = ' + conn.getRowCount());
+		var rows = conn.execute('SELECT * FROM YEAR_SCHOOL');
+		Titanium.API.info('ROW COUNT = ' + rows.getRowCount());
 	
-		if(conn.getRowCount() == null){
+		if(rows.getRowCount() == null || rows.getRowCount() == 0){
+			
 			return true;
 		}
 		else{
@@ -90,13 +92,37 @@ var db = (function(){
 		conn.close();		
 	}
 	
-	
 	api.createTest = function(){
 		var conn = Titanium.Database.open('reunion');
 		conn.execute('INSERT INTO YEAR_SCHOOL (YEAR, SCHOOL ) VALUES(?,?)', '2007', 'Columbia College');
 		conn.close();	
 	}
 	
+
+	api.getRegCode = function() {
+		var conn = Titanium.Database.open('reunion');
+		var rows = conn.execute('SELECT CODE FROM REG_CODE');
+		var results = {};
+
+		Titanium.API.info('ROW COUNT = ' + rows.getRowCount());
+		if(rows.getRowCount() == null || rows.getRowCount() == 0) {
+
+			return 'No registration code is set';
+		} else {
+
+			if(rows != null) {
+				while(rows.isValidRow()) {
+					results.code = rows.field(0);
+					rows.next();
+				}
+			}
+			conn.close();
+			Titanium.API.debug("Results: " + JSON.stringify(results));
+			return results;
+		}
+		conn.close();
+	};
+
 
   //return the public API
   return api;

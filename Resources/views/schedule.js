@@ -1,7 +1,7 @@
 var win = Titanium.UI.currentWindow;
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
-win.barColor = '#60A0D4';
-win.backgroundColor = '#60A0D4';
+win.barColor = '#477AAB';
+win.backgroundImage= '../images/background.png';
 win.addEventListener('focus', function() 
 { 
   buildWindow();
@@ -11,15 +11,15 @@ win.addEventListener('focus', function()
 function buildWindow(){
 	//var info = db.getYearSchool();
   	win.setTitle('Schedule');
-  	
-  	buildReloadButton();
-  	buildSettingsButton();
-    buildButtonBar();
-	//requestReunionBaseData('CC', 'cc2007');
-	requestReunionBaseData('CC', 'cc2007');
-	Ti.App.addEventListener('data.received', function(data) {
+  	requestReunionBaseData('CC', 'cc2007');
+  	Ti.App.addEventListener('data.received', function(data) {
 		createTableView(data.schedule);
 	});	
+  	buildReloadButton();
+  	buildSettingsButton(); 
+    buildButtonBar();
+
+
 }
 
 function buildReloadButton(){
@@ -63,7 +63,7 @@ function buildButtonBar(){
 		style:Titanium.UI.iPhone.SystemButtonStyle.BAR,
 		height:20,
 		index:0,
-		backgroundColor:'#60A0D4'
+		backgroundColor:'#477AAB'
 		
 	});
 	
@@ -96,9 +96,8 @@ function requestReunionBaseData(reunion_class, reunion_cohort){
 	xhr.onload = function(){
 		var s = JSON.parse(this.responseText);
 		Ti.App.fireEvent('data.received', s);
-		//Titanium.API.info(this.responseText);
+		Titanium.API.info(this.responseText);
 		//return this.responseText;
-	
 	};
 
     xhr.send();
@@ -119,7 +118,7 @@ function createTableView(schedule){
 
 	for(var i = 0; i<schedule.length; i++){
 		var event = schedule[i];
-				
+							
 		var row = Ti.UI.createTableViewRow({hasChild:true, height:55, hasDetail: true});
    
 		var lbl = Ti.UI.createLabel({
@@ -155,23 +154,23 @@ function createTableView(schedule){
 			left : 130
 		});
 
-	var date = new Date(event.date*1000); // convert to milliseconds	
-	row.add(lbl,lbl2,lbl3);
+		var date = new Date(event.date*1000); // convert to milliseconds	
+		row.add(lbl,lbl2,lbl3);
 
-	if(!last_date || last_date.getDay() != date.getDay()) {
-		row.header = event.display_date;
-	}
+		if(!last_date || last_date.getDay() != date.getDay()) {
+			row.header = event.display_date;
+		}
 	
-	last_date = date;
-	
-	rows.push(row);
+		last_date = date;
+		rows.push(row);
 	}
-
 
 	// create table view
 	var tableview = Titanium.UI.createTableView({
 		data: rows, 
-		top:39
+		top:39,
+		style: Titanium.UI.iPhone.TableViewStyle.GROUPED,
+		backgroundImage: '../images/background.png'
 	});
 
 	// create table view event listener
@@ -186,6 +185,12 @@ function createTableView(schedule){
 		
 		var event = schedule[e.index];
 		
+		var description_label = Titanium.UI.createLabel({
+  			color:'#000',
+  			text: event.description,	
+  			font:{fontStyle:'italics'}
+			});
+
 		var inputData = [
 			{title: event.title, header:''},
 			{title:'Map',  hasChild: true},
@@ -193,16 +198,57 @@ function createTableView(schedule){
 			{title: event.description, header: ''},
 		];
 
-		var tableView = Titanium.UI.createTableView({
+		var event_detail_view = Titanium.UI.createTableView({
 			top:30,
 			data:inputData,
 			style:Titanium.UI.iPhone.TableViewStyle.GROUPED,
-			//headerView: tableHeader,
 			backgroundImage: '../images/background.png'
 		});
 
-		win.add(tableView);
+		win.add(event_detail_view);
+		
+		event_detail_view.addEventListener('click', function(e){
+			//Ti.API.info(e);	
+			var event = schedule[e.index];
+			//Ti.API.info("____________HI " + event.latitude);	
+			if(e.index == 1){
+				//Ti.Platform.openURL("http://maps.google.com/maps?saddr=" + event.latitude + "," + event.longitude);
+				var map_win = Titanium.UI.createWindow({
+					barColor:'#60A0D4',
+					translucent:true,
+				});
+				
+				var annotation = Titanium.Map.createAnnotation({
+					latitude:event.latitude,
+					longitude:event.longitude,
+					title: event.location_name,
+					subtitle:'Test',
+					animate:true,
+					leftButton:'../images/atlanta.jpg',
+					image:"../images/boston_college.png"
+				});
 
+				var new_york = {
+					latitude : event.latitude,
+					longitude : event.longitude,
+					latitudeDelta : 0.010,
+					longitudeDelta : 0.018
+				};
+
+				var mapview = Titanium.Map.createView({
+					mapType : Titanium.Map.STANDARD_TYPE,
+					region : new_york,
+					animate : true,
+					regionFit : true,
+					userLocation : true,
+					annotations : [annotation]
+				});
+				
+				map_win.add(mapview);
+				map_win.open();
+			}	
+		});
+		
 		Titanium.UI.currentTab.open(win,{animated:true});	
 	});
 

@@ -1,6 +1,5 @@
-xvar win = Titanium.UI.currentWindow;
-
-//win.setTitle('Attendees');
+var win = Titanium.UI.currentWindow;
+win.setTitle('Attendees');
 /*
 if(Titanium.Network.networkType == Titanium.Network.NETWORK_NONE){ 
 	var alertDialog = Titanium.UI.createAlertDialog({
@@ -134,13 +133,4 @@ button_bar.addEventListener('click', function(e)
 	    
 });
 
-/*
-all_classes.addEventListener('click', function(e)
-{
-	
-	alert('you clicked all classes');
-    
-});
-*/
-
-Titanium.UI.currentWindow.add(tableview);
+win.add(tableview);

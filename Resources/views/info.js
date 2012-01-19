@@ -1,5 +1,5 @@
 var win = Titanium.UI.currentWindow;
-win.barColor = '60A0D4';
+win.barColor = '#477AAB';
 win.setTitle('Information');
 
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
@@ -26,7 +26,7 @@ win.addEventListener('focus', function()
 	if(info.school == "Columbia College"){
 		var filename = 'cc-crown-for-info-screen.png';
 	}
-	if(info.school == "Columbia General Studies" || info.school == "Barnard"  ){
+	if(info.school == "Columbia General Studies"){
 		var filename = 'cu-crown-for-info-screen.png';
 	}
 
@@ -83,7 +83,7 @@ win.addEventListener('focus', function()
 
 	var tableHeader = Ti.UI.createView({
     	//backgroundImage:"../images/tableHeaderShadow.png",
-    	top: 50, width:320,height:85});
+    	top: 55, width:320,height:85});
 
 	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
 
