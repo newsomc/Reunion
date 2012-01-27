@@ -79,7 +79,6 @@ var picker_view = Titanium.UI.createView({
 /**
  * Add the objects we've built up to the view.
  */
-
 var picker = new reunion.PickerClass();
 
 var done = new reunion.Done({click: function() 
@@ -102,7 +101,6 @@ var toolbar = new reunion.ToolBarClass([cancel.view, spacer.view, done.view]);
 picker_view.add(picker.view);
 picker_view.add(toolbar.view);
 
-
 /**
  * Set up animations.
  */
@@ -114,10 +112,9 @@ var slide_out =  Titanium.UI.createAnimation({bottom:-251});
 /**
  * Set up events.
  */
-
 combo_box.addEventListener('focus', function() 
 {
-	
+	combo_box.blur();	
 });
 
 /*

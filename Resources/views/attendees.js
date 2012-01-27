@@ -1,5 +1,6 @@
 var win = Titanium.UI.currentWindow;
 win.setTitle('Attendees');
+win.barColor = '#477AAB';
 /*
 if(Titanium.Network.networkType == Titanium.Network.NETWORK_NONE){ 
 	var alertDialog = Titanium.UI.createAlertDialog({

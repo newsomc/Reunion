@@ -4,36 +4,54 @@ win.barColor = '#477AAB';
 win.backgroundImage= '../images/background.png';
 win.addEventListener('focus', function() 
 { 
-  buildWindow();
+  
+  win.setTitle('Schedule');
+  
+  //acitivity indicator
+  var activity_indicator = Titanium.UI.createActivityIndicator({
+    height:50,
+    width:150,
+    style:Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
+    font: {fontFamily:'Helvetica Neue', fontSize:15, fontWeight:'bold'},
+    backgroundColor:'#000',
+    opacity:0.5,
+    borderRadius:5,
+    color: 'white',
+    message: 'Loading...',
+  });
+  activity_indicator.show();
+  win.add(activity_incdicator);
+
+  //xhr request
+  //TODO: setup School and Cohort in Database.
+  requestReunionBaseScheduleData('CC', 'cc2007');
+  
+  Ti.App.addEventListener('data.received', function(data) {
+  	createTableView(data.schedule, actInd);
+  	actInd.hide();
+  });	
+ 
+  buildReloadButton();
+  buildSettingsButton(); 
+  buildButtonBar();
+ 
 });
 
 
-function buildWindow(){
-	//var info = db.getYearSchool();
-  	win.setTitle('Schedule');
-  	requestReunionBaseData('CC', 'cc2007');
-  	Ti.App.addEventListener('data.received', function(data) {
-		createTableView(data.schedule);
-	});	
-  	buildReloadButton();
-  	buildSettingsButton(); 
-    buildButtonBar();
-
-
-}
-
-function buildReloadButton(){
+function buildReloadButton(options){
 	var reload_button =  Titanium.UI.createButton({
-		systemButton:Titanium.UI.iPhone.SystemButton.REFRESH
+		//systemButton:Titanium.UI.iPhone.SystemButton.REFRESH
+		systemButton:Titanium.UI.iPhone.SystemButton.ACTIVITY
 	});
  
 	win.setLeftNavButton(reload_button);
-
-	reload_button.addEventListener('click', function(e)
-	{
-		alert('cool');
-	});
 	
+	reload_button.addEventListener('click', function(){
+		alert('hi');
+		//reload_button.systemButton = Titanium.UI.iPhone.SystemButton.ACTIVITY;
+	});
+
+
 }
 
 function buildSettingsButton(){
@@ -46,9 +64,8 @@ function buildSettingsButton(){
 	
 	settings_button.addEventListener('click', function(e)
 	{
-		alert('cool 2');
-	});
 		
+	});		
 }
 
 function buildButtonBar(){	
@@ -77,15 +94,17 @@ function buildButtonBar(){
 			alert('first');
 		}
 		if(index == 1){
-			alert('second');
+
 		}
 	});
 }
 
 
-function requestReunionBaseData(reunion_class, reunion_cohort){
-	//we need to add an acess key.
-	//var access_key = null;
+function requestReunionBaseScheduleData(reunion_class, reunion_cohort, actInd){	
+	
+	
+	
+	
 	
 	var base_url =  'https://chameleon.college.columbia.edu/reunion_base/service/schedule/';
 	var request_url = base_url + reunion_class + '/' + reunion_cohort;
@@ -96,6 +115,7 @@ function requestReunionBaseData(reunion_class, reunion_cohort){
 	xhr.onload = function(){
 		var s = JSON.parse(this.responseText);
 		Ti.App.fireEvent('data.received', s);
+		actInd.hide();
 		Titanium.API.info(this.responseText);
 		//return this.responseText;
 	};
@@ -109,8 +129,8 @@ function requestReunionBaseData(reunion_class, reunion_cohort){
 }
 
 // create table view data object
-function createTableView(schedule){
-	Titanium.API.debug("++++ " + JSON.stringify(schedule));
+function createTableView(schedule, actInd){
+	//Titanium.API.debug("++++ " + JSON.stringify(schedule));
 	
 	var last_date = null;
 	
@@ -172,7 +192,9 @@ function createTableView(schedule){
 		style: Titanium.UI.iPhone.TableViewStyle.GROUPED,
 		backgroundImage: '../images/background.png'
 	});
-
+	
+	tableview.add(actInd);
+	
 	// create table view event listener
 	tableview.addEventListener('click', function(e)
 	{

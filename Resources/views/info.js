@@ -82,8 +82,10 @@ win.addEventListener('focus', function()
 	});
 
 	var tableHeader = Ti.UI.createView({
-    	//backgroundImage:"../images/tableHeaderShadow.png",
-    	top: 55, width:320,height:85});
+    	top:55, 
+    	width:320,
+    	height:85
+    });
 
 	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
 
@@ -105,7 +107,6 @@ win.addEventListener('focus', function()
 
 	win.add(tableView);
 	
-//Setting up settings window. 
 	var settings_win = Titanium.UI.createWindow({
     	title: 'Settings',
     	backgroundColor: '#A6B7C8',
