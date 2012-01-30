@@ -4,7 +4,7 @@ win.barColor = '#477AAB';
 win.backgroundColor = '#477AAB';
 var schedule_table;
 //win.backgroundImage = '../images/background.png';
-win.addEventListener('focus', function() {
+//win.addEventListener('focus', function() {
 
 	win.setTitle('Schedule');
 
@@ -106,7 +106,7 @@ win.addEventListener('focus', function() {
 	});
 	buildSettingsButton();
 
-});
+//});
 function buildReloadButton(options) {
 	var reload_button = Titanium.UI.createButton({
 		systemButton : Titanium.UI.iPhone.SystemButton.REFRESH

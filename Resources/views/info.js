@@ -1,7 +1,6 @@
 var win = Titanium.UI.currentWindow;
 win.barColor = '#477AAB';
 win.setTitle('Information');
-
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 
 win.addEventListener('focus', function() {
