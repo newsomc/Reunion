@@ -14,14 +14,18 @@ reunion.PickerClass = function(options){
 	});
 
 	this.schools = [
-		{title:'Columbia College',fontSize:14, custom_item:'b', selected:true},
-		{title:'Columbia Engineering', fontSize:14, custom_item:'s'},
-		{title:'Engineering MS/PhD', fontSize:14, custom_item:'f'},
-		{title:'Columbia General Studies', fontSize:14, custom_item:'m'}
+		{title:'Columbia College',fontSize:14, school_abbr:'CC', cohort_prefix:'cc', selected:true},
+		{title:'Columbia Engineering', fontSize:14, school_abbr:'SEAS',cohort_prefix:'seas'},
+		{title:'Engineering MS/PhD', fontSize:14, school_abbr:'SEAS', cohort_prefix: 'gradEn'},
+		{title:'Columbia General Studies', fontSize:14, school_abbr:'GS', cohort_prefix: 'gs'}
 	];
 	
 	for (var i in this.schools){
-		this.column_one.addRow(Ti.UI.createPickerRow({title: this.schools[i].title, fontSize: this.schools[i].fontSize, selected: this.schools[i].selected?true:false}));
+		this.column_one.addRow(Ti.UI.createPickerRow({title: this.schools[i].title, 
+													  fontSize: this.schools[i].fontSize,
+													  school_abbr: this.schools[i].school_abbr,
+													  cohort_prefix: this.schools[i].cohort_prefix, 
+													  selected: this.schools[i].selected?true:false}));
 	} 
 
 	this.years = ['1942', '1947', '1952', '1957', '1962', '1967', '1972', '1977', '1982', '1987', '1992', '1997', '2002', '2007'];

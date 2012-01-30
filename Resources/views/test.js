@@ -1,5 +1,5 @@
 var win = Titanium.UI.currentWindow;
-
+win.barColor = '#477AAB';
 win.setTitle('Social');
 // create table view data object
 var data = [
