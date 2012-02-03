@@ -1,6 +1,7 @@
 var win = Titanium.UI.currentWindow;
-win.barColor = '#477AAB';
-win.setTitle('Social');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
+setUpWindow('More');
 // create table view data object
 var data = [
 	{title:'YouTube', hasChild:true, url:'http://www.youtube.com/user/columbiauniversity'},
