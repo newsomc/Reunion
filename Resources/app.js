@@ -1,11 +1,9 @@
-//Titanium.UI.setBackgroundColor('#000');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/picker.js');
 
 var firstTime = db.isFirstTime();
-//var firstTime = isFirstTime();
-Ti.API.info('is First time? ' + firstTime);
 
+//Build tab group.
 var tabData = [{
 	title : 'Info',
 	icon : 'images/KS_nav_info.png',
@@ -21,12 +19,8 @@ var tabData = [{
 }, {
 	title : 'More',
 	icon : Titanium.UI.iPhone.SystemIcon.MORE,
-	url : 'views/test.js'
-}
-//{title:'More',icon:'images/KS_nav_social.png',url:'views/facebook_photo.js'}
-//
-//{title:'News',icon:'images/KS_nav_news.png',url:'views/news.js'}
-];
+	url : 'views/more.js'
+}];
 
 var tabGroup = Titanium.UI.createTabGroup();
 
@@ -62,7 +56,6 @@ var drop_button = Titanium.UI.createButton({
 	enabled : true
 });
 
-//var combo_box =  Titanium.UI.createButton({
 var combo_box = Titanium.UI.createTextField({
 	hintText : "Select your school and year!",
 	height : 40,
@@ -93,9 +86,7 @@ var picker_view = Titanium.UI.createView({
 	bottom : -251
 });
 
-/**
- * Add the objects we've built up to the view.
- */
+// Wrap Appcelerator objects + set up optional events.
 var picker = new reunion.PickerClass();
 
 var done = new reunion.Done({
@@ -105,7 +96,6 @@ var done = new reunion.Done({
 		picker_view.animate(slide_out);
 		first_time_window.add(confirm_button);
 		confirm_button.animate(slide_in_confirm);
-
 	}
 });
 
@@ -118,13 +108,11 @@ var cancel = new reunion.Cancel({
 var spacer = new reunion.Spacer();
 var toolbar = new reunion.ToolBarClass([cancel.view, spacer.view, done.view]);
 
+//Add wrapped objects to current view.  
 picker_view.add(picker.view);
 picker_view.add(toolbar.view);
 
-/**
- * Set up animations.
- */
-
+//Set up animations.
 var slide_in = Titanium.UI.createAnimation({
 	bottom : 0
 });
@@ -135,9 +123,7 @@ var slide_out = Titanium.UI.createAnimation({
 	bottom : -251
 });
 
-/**
- * Set up events.
- */
+//Set up events.
 combo_box.addEventListener('focus', function() {
 	combo_box.blur();
 });
@@ -152,20 +138,20 @@ drop_button.addEventListener('click', function() {
 confirm_button.addEventListener('click', function() {
 	confirm_button.backgroundColor = '#7EA0C3';
 	confirm_button.color = 'black';
-	db.storeSchoolCohortYear(picker.view.getSelectedRow(1).title, 
-					   picker.view.getSelectedRow(0).title, 
-					   picker.view.getSelectedRow(0).school_abbr,
-					   picker.view.getSelectedRow(0).cohort_prefix
-					   );
+	db.storeSchoolCohortYear(
+		picker.view.getSelectedRow(1).title, 
+		picker.view.getSelectedRow(0).title, 
+		picker.view.getSelectedRow(0).school_abbr,
+		picker.view.getSelectedRow(0).cohort_prefix
+	);
 	first_time_window.close({
 		transition : Titanium.UI.iPhone.AnimationStyle.CURL_UP
 	});
 	win.open();
 	tabGroup.open();
 });
-/**
- * Check if this is the first time loading the app.
- */
+
+//Check if this is the first time loading the app.
 if(firstTime == true) {
 	first_time_window.add(picker_view);
 	first_time_window.add(combo_box);
