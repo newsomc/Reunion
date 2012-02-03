@@ -1,33 +1,28 @@
 var win = Titanium.UI.currentWindow;
-win.barColor = '#477AAB';
-win.setTitle('Information');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 
 win.addEventListener('focus', function() {
+	setUpWindow('Information');
 
 	var info = db.getUserPrefs();
-	var right_pos = 19;
-	var left_pos = 90;
-
-	//Titanium.API.debug(JSON.stringify(title));
-	// -> WORKS. Titanium.API.debug("SHIIT" + JSON.stringify(db.getYearSchoolAsText()));
-
-	if(info.school_abbr == "SEAS") {
-		var filename = 'ce-crown-for-info-screen.png';
-	}
-/*
-	if(info.school == "Engineering MS/PhD") {
-		var filename = 'ce-crown-for-info-screen.png';
-	}
-*/
+	
 	if(info.school_abbr == "CC") {
 		var filename = 'cc-crown-for-info-screen.png';
 	}
+	
+	if(info.school_abbr == "SEAS") {
+		var filename = 'ce-crown-for-info-screen.png';
+	}
+
 	if(info.school_abbr == "GS") {
 		var filename = 'cu-crown-for-info-screen.png';
 	}
 
+	//Table header objects.
 	var logo_fn = Ti.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, 'images/' + filename);
+	var right_pos = 19;
+	var left_pos = 90;
 
 	var logo = Titanium.UI.createImageView({
 		image : logo_fn,
@@ -44,7 +39,7 @@ win.addEventListener('focus', function() {
 		height : 'auto',
 		text : info.school,
 		font : {
-			fontSize : 15,
+			fontSize : 17,
 			fontWeight : 'bold'
 		},
 		color : '#4D576D',
@@ -62,7 +57,7 @@ win.addEventListener('focus', function() {
 		height : 'auto',
 		text : 'Class of ' + info.year,
 		font : {
-			fontSize : 15,
+			fontSize : 17,
 			fontWeight : 'bold'
 		},
 		color : '#4D576D',
@@ -80,7 +75,7 @@ win.addEventListener('focus', function() {
 		height : 'auto',
 		text : 'Alumni Reunion Weekend',
 		font : {
-			fontSize : 15,
+			fontSize : 17,
 			fontWeight : 'bold'
 		},
 		color : '#4D576D',
@@ -91,7 +86,7 @@ win.addEventListener('focus', function() {
 		}
 	});
 
-	//Should be pulled from reunion_base.
+	//Should date be pulled from reunion_base?
 	var dateLabel = Ti.UI.createLabel({
 		top : 70,
 		left : left_pos,
@@ -99,7 +94,7 @@ win.addEventListener('focus', function() {
 		height : 'auto',
 		text : 'May 31 - Jun 3, 2012',
 		font : {
-			fontSize : 15
+			fontSize : 17
 		},
 		color : '#4D576D',
 		shadowColor : '#FAFAFA',
@@ -115,8 +110,10 @@ win.addEventListener('focus', function() {
 		height : 85
 	});
 
+	//Add table header objects to screen.
 	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
 
+	//This table will need to be created in Reunion base. 
 	var inputData = [{
 		title : 'Registration'
 	}, {
@@ -141,7 +138,7 @@ win.addEventListener('focus', function() {
 		data : inputData,
 		style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
 		headerView : tableHeader,
-		backgroundImage : '../images/background.png'
+		backgroundImage : '../images/background-notile.png'
 	});
 
 	win.add(tableView);
