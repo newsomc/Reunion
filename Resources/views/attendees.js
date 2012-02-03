@@ -48,10 +48,19 @@ win.addEventListener('focus', function() {
 		backgroundColor : '#4a85c8'
 	});
 
+	//pull data.
+	getReunionData('/attendees/' + info.school_abbr, function(_respData) {
+		var data = JSON.parse(_respData);
+		Ti.API.info(JSON.stringify(data));
+		attendee_table = createAttendeeTableView(data.attendees);
+		win.add(attendee_table);
+		activity_indicator.hide();
+	});
+
 	button_bar.addEventListener('click', function(e) {
-		
+
 		var index = e.index;
-		
+
 		var slide_out = Titanium.UI.createAnimation({
 			bottom : -251
 		});
@@ -66,6 +75,9 @@ win.addEventListener('focus', function() {
 			});
 		}
 		if(index == 1) {
+			
+			Ti.API.info('/attendees/' + info.school_abbr + '/' + info.year);
+			
 			getReunionData('/attendees/' + info.school_abbr + '/' + info.year, function(_respData) {
 				var data = JSON.parse(_respData);
 				Ti.API.info(JSON.stringify(data));
@@ -80,13 +92,6 @@ win.addEventListener('focus', function() {
 	activity_indicator.show();
 	win.add(button_bar);
 
-	getReunionData('/attendees/' + info.school_abbr, function(_respData) {
-		var data = JSON.parse(_respData);
-		Ti.API.info(JSON.stringify(data));
-		attendee_table = createAttendeeTableView(data.attendees);
-		win.add(attendee_table);
-		activity_indicator.hide();
-	});
 	function createAttendeeTableView(attendees) {
 
 		var last_cohort_abbr = null;
@@ -96,22 +101,11 @@ win.addEventListener('focus', function() {
 			var registrant = attendees[i];
 
 			var row = Ti.UI.createTableViewRow({
+				title: registrant.firstname + ' ' + registrant.lastname,
 				hasChild : false,
 				height : 55,
 				hasDetail : false
 			});
-
-			var lbl = Ti.UI.createLabel({
-				text : registrant.firstname + ' ' + registrant.lastname,
-				textAlign : 'left',
-				left : 10,
-				font : {
-					fontWeight : 'bold',
-					fontSize : 14
-				}
-			});
-
-			row.add(lbl);
 
 			if(!last_cohort_abbr || last_cohort_abbr != registrant.cohort_abbr) {
 				row.header = registrant.cohort_name;
