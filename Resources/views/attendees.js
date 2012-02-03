@@ -1,149 +1,201 @@
 var win = Titanium.UI.currentWindow;
-win.setTitle('Attendees');
-win.barColor = '#477AAB';
-win.backgroundColor = '#477AAB';
+
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
 
-var base_url = 'https://chameleon.college.columbia.edu/reunion_base/service/attendees/';
-var info = db.getUserPrefs();
+win.addEventListener('focus', function() {
 
-Ti.API.info(base_url + info.school_abbr)
+	setUpWindow('Attendees');
 
-var attendees = [];
-var xhr = Ti.Network.createHTTPClient();
-xhr.timeout = 1000000;
-xhr.open("GET", base_url + info.school_abbr);
+	var info = db.getUserPrefs();
+	var attendee_table;
+	var attendee_year_table;
 
-xhr.onload = function() {
-	var s = JSON.parse(this.responseText);
-	//Titanium.API.debug(JSON.stringify(s));
-	for(keys in s) {
-		if(keys == '') {
-			keys = 'Guests';
-		}
-		var head = Ti.UI.createTableViewSection({
-			headerTitle : keys
-		});
-		for(var i = 0; i < s[keys].length; i++) {
-			rows = Ti.UI.createTableViewRow({
-				title : s[keys][i].firstname + " " + s[keys][i].lastname,
-			});
-			attendees.push(rows);
-		}
-		attendees.push(head);
-	}
-	Titanium.API.info(this.responseText);
-	tableview.setData(attendees);
-	activity_indicator.hide();
-};
-
-xhr.send();
-
-xhr.onerror = function(e) {
-	Ti.API.info(e);
-};
-//set up search bar
-var search = Titanium.UI.createSearchBar({
-	showCancel : false,
-	hintText : 'search'
-});
-
-search.addEventListener('change', function(e) {
-	e.value
-});
-search.addEventListener('return', function(e) {
-	search.blur();
-});
-search.addEventListener('cancel', function(e) {
-	search.blur();
-});
-// create table view
-var tableview = Titanium.UI.createTableView({
-	data : attendees,
-	search : search,
-	style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-	backgroundImage : '../images/background.png',
-	top : 39
-});
-
-var buttons = [{
-	title : 'All',
-	width : 150,
-	enabled : true
-}, {
-	title : 'My Class',
-	width : 150,
-	enabled : false
-}];
-
-var button_bar = Titanium.UI.createTabbedBar({
-	labels : buttons,
-	top : 5,
-	style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
-	height : 30,
-	index : 0,
-	backgroundColor : '#477AAB'
-});
-
-win.add(button_bar);
-
-//acitivity indicator
-var activity_indicator = Titanium.UI.createActivityIndicator({
-	height : 50,
-	width : 150,
-	style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
-	font : {
-		fontFamily : 'Helvetica Neue',
-		fontSize : 15,
-		fontWeight : 'bold'
-	},
-	backgroundColor : '#000',
-	opacity : 0.5,
-	borderRadius : 5,
-	color : 'white',
-	message : 'Loading...',
-});
-activity_indicator.show();
-tableview.add(activity_indicator);
-
-// create table view event listener
-/*tableview.addEventListener('click', function(e)
- {
- var index = e.index;
- var section = e.section;
- var row = e.row;
- var rowdata = e.rowData;
- Titanium.UI.createAlertDialog({title:'Table View',message:'row ' + row + ' index ' + index + ' section ' + section  + ' row data ' + rowdata}).show();
- });*/
-
-win.add(tableview);
-/*
- button_bar.addEventListener('click', function() {
- index = e.index;
- var slide_out = Titanium.UI.createAnimation({
- bottom : -251
- });
-
- if(index == 0) {
- //tableview.show();
- }
- if(index == 1) {
- //tableview.animate(slide_out);
- alert('2');
- }
- });*/
-
-button_bar.addEventListener('click', function(e) {
-	var index = e.index;
-	var slide_out = Titanium.UI.createAnimation({
-		bottom : -251
+	var activity_indicator = Titanium.UI.createActivityIndicator({
+		height : 50,
+		width : 150,
+		style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
+		font : {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 15,
+			fontWeight : 'bold'
+		},
+		backgroundColor : '#000',
+		opacity : 0.5,
+		borderRadius : 5,
+		color : 'white',
+		message : 'Loading...',
 	});
 
-	if(index == 0) {
-		tableview.show();
-		//alert('first');
+	// button bar.
+	var buttons = [{
+		title : 'All',
+		width : 150,
+		enabled : true
+	}, {
+		title : 'My Class',
+		width : 150,
+		enabled : false
+	}];
+
+	var button_bar = Titanium.UI.createTabbedBar({
+		labels : buttons,
+		top : 5,
+		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
+		height : 30,
+		index : 0,
+		backgroundColor : '#4a85c8'
+	});
+
+	button_bar.addEventListener('click', function(e) {
+		
+		var index = e.index;
+		
+		var slide_out = Titanium.UI.createAnimation({
+			bottom : -251
+		});
+
+		if(index == 0) {
+			getReunionData('/attendees/' + info.school_abbr, function(_respData) {
+				var data = JSON.parse(_respData);
+				Ti.API.info(JSON.stringify(data));
+				attendee_table = createAttendeeTableView(data.attendees);
+				win.add(attendee_table);
+				activity_indicator.hide();
+			});
+		}
+		if(index == 1) {
+			getReunionData('/attendees/' + info.school_abbr + '/' + info.year, function(_respData) {
+				var data = JSON.parse(_respData);
+				Ti.API.info(JSON.stringify(data));
+				attendee_year_table = createAttendeeTableView(data.attendees);
+				attendee_table.hide();
+				win.add(attendee_year_table);
+				activity_indicator.hide();
+			});
+		}
+	});
+
+	activity_indicator.show();
+	win.add(button_bar);
+
+	getReunionData('/attendees/' + info.school_abbr, function(_respData) {
+		var data = JSON.parse(_respData);
+		Ti.API.info(JSON.stringify(data));
+		attendee_table = createAttendeeTableView(data.attendees);
+		win.add(attendee_table);
+		activity_indicator.hide();
+	});
+	function createAttendeeTableView(attendees) {
+
+		var last_cohort_abbr = null;
+		var rows = [];
+
+		for(var i = 0; i < attendees.length; i++) {
+			var registrant = attendees[i];
+
+			var row = Ti.UI.createTableViewRow({
+				hasChild : false,
+				height : 55,
+				hasDetail : false
+			});
+
+			var lbl = Ti.UI.createLabel({
+				text : registrant.firstname + ' ' + registrant.lastname,
+				textAlign : 'left',
+				left : 10,
+				font : {
+					fontWeight : 'bold',
+					fontSize : 14
+				}
+			});
+
+			row.add(lbl);
+
+			if(!last_cohort_abbr || last_cohort_abbr != registrant.cohort_abbr) {
+				row.header = registrant.cohort_name;
+			}
+			last_cohort_abbr = registrant.cohort_abbr;
+			rows.push(row);
+		}
+
+		//set up search bar
+		var search = Titanium.UI.createSearchBar({
+			showCancel : false,
+			hintText : 'search'
+		});
+
+		var tableview = Titanium.UI.createTableView({
+			data : rows,
+			search : search,
+			top : 39,
+			style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+			backgroundImage : '../images/background-notile.png'
+		});
+
+		if(attendees.length == 0) {
+			var empty_label = Ti.UI.createLabel({
+				top : 5,
+				left : 20,
+				right : 20,
+				text : 'There is currently no attendees. Check again soon!',
+				font : {
+					fontSize : 15,
+					fontWeight : 'bold'
+				},
+				color : '#4D576D',
+				textAlign : 'center',
+				shadowColor : '#FAFAFA',
+				shadowOffset : {
+					x : 0,
+					y : 1
+				}
+			});
+
+			tableview.add(empty_label);
+			empty_label.show();
+		}
+
+		//search events.
+		search.addEventListener('change', function(e) {
+			e.value
+		});
+		search.addEventListener('return', function(e) {
+			search.blur();
+		});
+		search.addEventListener('cancel', function(e) {
+			search.blur();
+		});
+		// add table view to the window
+		//Titanium.UI.currentWindow.add(tableview);
+		return tableview;
 	}
-	if(index == 1) {
-		tableview.hide();
-	}
+
+	/*
+	 //OLD STUFF
+	 function createAttendeeTableView(json_data) {
+	 for(keys in json_data) {
+	 if(keys == '') {
+	 keys = 'Guests';
+	 }
+
+	 var head = Ti.UI.createTableViewSection({
+	 headerTitle : keys
+	 });
+
+	 for(var i = 0; i < s[keys].length; i++) {
+	 rows = Ti.UI.createTableViewRow({
+	 title : json_data[keys][i].firstname + " " + json_data[keys][i].lastname,
+	 });
+	 attendees.push(rows);
+	 }
+	 attendees.push(head);
+	 }
+	 tableview.setData(json_data);
+	 }
+	 //OLD STUFF
+
+	 */
+
 });
