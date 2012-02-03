@@ -1,17 +1,18 @@
 var win = Titanium.UI.currentWindow;
-
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/picker.js');
 
+//pull user's registration code.
 var reg_code = db.getRegCode();
-//Ti.API.info("++++++++++++++HI " + reg_code);
-// build custom tableView data/layout
-var array = [];
+
+//initialize array that will hold custom field values.
+var field_values = [];
 
 var valueRow = Titanium.UI.createTableViewRow({
 	height : 46,
 	className : 'valueRow'
 });
+
 var codeRow = Titanium.UI.createTableViewRow({
 	height : 46,
 	className : 'codeRow'
@@ -29,6 +30,7 @@ var valueLabel = Ti.UI.createLabel({
 	height : 24,
 	width : 170
 });
+
 var valueData = Ti.UI.createLabel({
 	color : '#3D4460',
 	text : "",
@@ -63,72 +65,59 @@ var codeData = Titanium.UI.createTextField({
 	width : 150,
 	top : 11,
 	left : 133,
-	//textAlign: 'right',
 	font : {
 		fontSize : 12,
 		fontWeight : 'normal'
-	},
-	//textAlign : 'right'
+	}
 });
 
+// zero out field on focus.
 codeData.addEventListener('focus', function() {
 	codeData.value = '';
 
 });
-/*
- var codeData = Ti.UI.createLabel({
- color : '#3D4460',
- text : reg_code,
- font : {
- fontSize : 12,
- fontWeight : 'normal'
- },
- top : 11,
- left : 102,
- height : 20,
- width : 180,
- textAlign : 'right'
- });
- */
-
+// add values to rows.
 valueRow.add(valueLabel);
 valueRow.add(valueData);
-array.push(valueRow);
 
+// add code values to label.
 codeRow.add(codeLabel);
 codeRow.add(codeData);
-array.push(codeRow);
 
-// view initialization
+field_values.push(valueRow);
+field_values.push(codeRow);
+
+// view initialization.
 var pickerView = Titanium.UI.createView({
 	height : 251,
 	bottom : -251
 });
+
 var tableView = Titanium.UI.createTableView({
-	data : array,
+	data : field_values,
 	style : Titanium.UI.iPhone.TableViewStyle.GROUPED
 });
 
+// set up animations.
 var slide_in = Titanium.UI.createAnimation({
 	bottom : 0
 });
+
 var slide_out = Titanium.UI.createAnimation({
 	bottom : -251
 });
 
+// initialize wrapper classes.
 var picker = new reunion.PickerClass({
 	change : function() {
 		valueData.text = picker.view.getSelectedRow(0).title + " " + picker.view.getSelectedRow(1).title;
-		tableView.setData(array);
+		tableView.setData(field_values);
 	}
 });
 
 var done = new reunion.Done({
 	click : function() {
-		db.updateYearSchool(picker.view.getSelectedRow(1).title, 
-							picker.view.getSelectedRow(0).title,
-							picker.view.getSelectedRow(0).school_abbr,
-							picker.view.getSelectedRow(0).cohort_prefix);
+		db.updateYearSchool(picker.view.getSelectedRow(1).title, picker.view.getSelectedRow(0).title, picker.view.getSelectedRow(0).school_abbr, picker.view.getSelectedRow(0).cohort_prefix);
 		Ti.API.info(JSON.stringify(picker.view.getSelectedRow(0)));
 		pickerView.animate(slideOut);
 	}
@@ -140,9 +129,11 @@ var cancel = new reunion.Cancel({
 		picker_view.animate(slide_out);
 	}
 });
+
 var spacer = new reunion.Spacer();
 var toolbar = new reunion.ToolBarClass([cancel.view, spacer.view, done.view]);
 
+//add custom ui objects to picker view.
 pickerView.add(picker.view);
 pickerView.add(toolbar.view);
 
@@ -153,7 +144,7 @@ var settings_done = Ti.UI.createButton({
 win.setRightNavButton(settings_done);
 
 settings_done.addEventListener('click', function() {
-	
+
 	if(codeData.value == '') {
 		alert('You must enter a valid registration code to retrive your schedule.');
 	} else {
@@ -161,19 +152,10 @@ settings_done.addEventListener('click', function() {
 		win.close();
 	}
 });
-// animations
-var slideIn = Titanium.UI.createAnimation({
-	bottom : -43
-});
-var slideOut = Titanium.UI.createAnimation({
-	bottom : -251
-});
 
 // event functions
 tableView.addEventListener('click', function(eventObject) {
 	if(eventObject.rowData.className == "valueRow") {
-		//titleText.blur();
-		//datePickerView.animate(slideOut);
 		pickerView.animate(slideIn);
 	}
 });
