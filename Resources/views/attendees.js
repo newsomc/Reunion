@@ -6,7 +6,9 @@ Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
 
 win.addEventListener('focus', function() {
 
-	setUpWindow('Attendees');
+	var info = db.getUserPrefs();
+	
+	setUpWindow(info.school);
 
 	var info = db.getUserPrefs();
 	var attendee_table;
@@ -66,6 +68,7 @@ win.addEventListener('focus', function() {
 		});
 
 		if(index == 0) {
+			activity_indicator.show();
 			getReunionData('/attendees/' + info.school_abbr, function(_respData) {
 				var data = JSON.parse(_respData);
 				Ti.API.info(JSON.stringify(data));
@@ -75,9 +78,7 @@ win.addEventListener('focus', function() {
 			});
 		}
 		if(index == 1) {
-			
-			Ti.API.info('/attendees/' + info.school_abbr + '/' + info.year);
-			
+			activity_indicator.show();
 			getReunionData('/attendees/' + info.school_abbr + '/' + info.year, function(_respData) {
 				var data = JSON.parse(_respData);
 				Ti.API.info(JSON.stringify(data));

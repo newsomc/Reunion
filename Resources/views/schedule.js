@@ -76,12 +76,17 @@ win.addEventListener('focus', function() {
 		}
 		if(index == 1) {
 			getReunionData('/party_schedule/2s4z', function(_respData) {
-				var data = JSON.parse(_respData);
+								var data = JSON.parse(_respData);
 				schedule_table = createTableView(data.schedule);
 				win.add(schedule_table);
-				//reload_button.remove();
 				activity_indicator.hide();
 
+/*
+				var data = JSON.parse(_respData);
+				my_schedule = createTableView(data.schedule);
+				schedule_table.hide();
+				win.add(my_schedule);
+				activity_indicator.hide();*/
 			});
 		}
 	});

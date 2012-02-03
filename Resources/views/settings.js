@@ -8,9 +8,9 @@ var reg_code = db.getRegCode();
 //initialize array that will hold custom field values.
 var field_values = [];
 
-var valueRow = Titanium.UI.createTableViewRow({
+var schoolYearRow = Titanium.UI.createTableViewRow({
 	height : 46,
-	className : 'valueRow'
+	className : 'schoolYearRow'
 });
 
 var codeRow = Titanium.UI.createTableViewRow({
@@ -77,14 +77,14 @@ codeData.addEventListener('focus', function() {
 
 });
 // add values to rows.
-valueRow.add(valueLabel);
-valueRow.add(valueData);
+schoolYearRow.add(valueLabel);
+schoolYearRow.add(valueData);
 
 // add code values to label.
 codeRow.add(codeLabel);
 codeRow.add(codeData);
 
-field_values.push(valueRow);
+field_values.push(schoolYearRow);
 field_values.push(codeRow);
 
 // view initialization.
@@ -119,7 +119,7 @@ var done = new reunion.Done({
 	click : function() {
 		db.updateYearSchool(picker.view.getSelectedRow(1).title, picker.view.getSelectedRow(0).title, picker.view.getSelectedRow(0).school_abbr, picker.view.getSelectedRow(0).cohort_prefix);
 		Ti.API.info(JSON.stringify(picker.view.getSelectedRow(0)));
-		pickerView.animate(slideOut);
+		pickerView.animate(slide_out);
 	}
 });
 
@@ -155,8 +155,8 @@ settings_done.addEventListener('click', function() {
 
 // event functions
 tableView.addEventListener('click', function(eventObject) {
-	if(eventObject.rowData.className == "valueRow") {
-		pickerView.animate(slideIn);
+	if(eventObject.rowData.className == "schoolYearRow") {
+		pickerView.animate(slide_in);
 	}
 });
 
