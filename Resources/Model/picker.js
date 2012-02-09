@@ -1,7 +1,7 @@
 var reunion = {};
 
 reunion.PickerClass = function(options){	
-		
+	
 	this.view = Titanium.UI.createPicker({
 		top:43
 	});
@@ -14,7 +14,7 @@ reunion.PickerClass = function(options){
 	});
 
 	this.schools = [
-		{title:'Columbia College',fontSize:14, school_abbr:'CC', cohort_prefix:'cc', selected:true},
+		{title:'Columbia College',fontSize:14, school_abbr:'CC', cohort_prefix:'cc'},
 		{title:'Columbia Engineering', fontSize:14, school_abbr:'SEAS',cohort_prefix:'seas'},
 		{title:'Engineering MS/PhD', fontSize:14, school_abbr:'SEAS', cohort_prefix: 'gradEn'},
 		{title:'Columbia General Studies', fontSize:14, school_abbr:'GS', cohort_prefix: 'gs'}
@@ -28,6 +28,7 @@ reunion.PickerClass = function(options){
 													  selected: this.schools[i].selected?true:false}));
 	} 
 
+	//These years should be pulled from web service in the future. 
 	this.years = ['1942', '1947', '1952', '1957', '1962', '1967', '1972', '1977', '1982', '1987', '1992', '1997', '2002', '2007'];
 	
 	this.column_two = Ti.UI.createPickerColumn({width:75});
@@ -39,11 +40,11 @@ reunion.PickerClass = function(options){
 	this.view.add([this.column_one,this.column_two]);
 
 	this.view.add(this.getVals);
-	
+		
 	if(options && options.change){
 		this.view.addEventListener('change', options.change);	
 	}
-		
+	
 };
 
 reunion.Cancel = function(options){
@@ -80,7 +81,7 @@ reunion.ToolBarClass = function(items){
 	
 	this.items = items;
 	
-	this.view =  Titanium.UI.createToolbar({
+	this.view =  Titanium.UI.iOS.createToolbar({
 		top:0,
 		items:this.items
 	});

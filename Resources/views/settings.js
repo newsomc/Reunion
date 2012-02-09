@@ -8,8 +8,9 @@ var win = Titanium.UI.currentWindow;
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/picker.js');
 
-//pull user's registration code.
+//pull user's registration code + preferences
 var reg_code = db.getRegCode();
+var prefs = db.getUserPrefs();
 
 //initialize array that will hold custom field values.
 var field_values = [];
@@ -82,6 +83,7 @@ regCodeData.addEventListener('focus', function() {
 	regCodeData.value = '';
 
 });
+
 // add values to rows.
 schoolYearRow.add(schoolYearLabel);
 schoolYearRow.add(schoolYearData);
@@ -123,8 +125,10 @@ var picker = new reunion.PickerClass({
 
 var done = new reunion.Done({
 	click : function() {
-		db.updateYearSchool(picker.view.getSelectedRow(1).title, picker.view.getSelectedRow(0).title, picker.view.getSelectedRow(0).school_abbr, picker.view.getSelectedRow(0).cohort_prefix);
-		Ti.API.info(JSON.stringify(picker.view.getSelectedRow(0)));
+		db.updateYearSchool(picker.view.getSelectedRow(1).title, 
+		                    picker.view.getSelectedRow(0).title, 
+		                    picker.view.getSelectedRow(0).school_abbr, 
+		                    picker.view.getSelectedRow(0).cohort_prefix);
 		picker_view.animate(slide_out);
 	}
 });
@@ -142,6 +146,8 @@ var toolbar = new reunion.ToolBarClass([cancel.view, spacer.view, done.view]);
 //add custom ui objects to picker view.
 picker_view.add(picker.view);
 picker_view.add(toolbar.view);
+
+picker.view.setSelectedRow(0, 1, true);
 
 var settings_done = Ti.UI.createButton({
 	systemButton : Titanium.UI.iPhone.SystemButton.DONE
@@ -166,8 +172,37 @@ tableView.addEventListener('click', function(eventObject) {
 	}
 });
 
-schoolYearData.text = db.getYearSchoolAsText();
-
 // build display
 win.add(tableView);
 win.add(picker_view);
+
+//Set picker to current user prefs.
+
+win.addEventListener('open', function(e) {
+	if(prefs.school_abbr == 'CC') {
+		picker.view.setSelectedRow(0, 0, false);
+	}
+	if(prefs.school_abbr == 'SEAS' && prefs.cohort_prefix == 'seas') {
+		picker.view.setSelectedRow(0, 1, false);
+	}
+	if(prefs.school_abbr == 'SEAS' && prefs.cohort_prefix == 'gradEn') {
+		picker.view.setSelectedRow(0, 2, false);
+	}
+	if(prefs.school_abbr == 'GS') {
+		picker.view.setSelectedRow(0, 3, false);
+	}
+
+	var reunion_years = ['1942', '1947', '1952', '1957', '1962', '1967', '1972', '1977', '1982', '1987', '1992', '1997', '2002', '2007'];
+	var user_year = prefs.year;
+	//Ti.API.info("USER YEAR: " + user_year);
+	for( i = 0; i < reunion_years.length; i++) {
+		if(user_year == reunion_years[i]){
+			Ti.API.info('I: '+i);
+			picker.view.setSelectedRow(1, i, false);
+		}
+	}
+
+});
+
+
+schoolYearData.text = db.getYearSchoolAsText();

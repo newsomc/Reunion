@@ -46,7 +46,7 @@ win.addEventListener('focus', function() {
 		enabled : false
 	}];
 
-	var button_bar = Titanium.UI.createTabbedBar({
+	var button_bar = Titanium.UI.iOS.createTabbedBar({
 		labels : buttons,
 		top : 10,
 		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
@@ -60,26 +60,24 @@ win.addEventListener('focus', function() {
 	//Get user defined prefs.
 	var info = db.getUserPrefs();
 	var registration = db.getRegCode();
-	var cohortAbbr =  info.cohort_prefix + info.year;
-		
+	var cohortAbbr = info.cohort_prefix + info.year;
+
 	var reload_button = Titanium.UI.createButton({
 		systemButton : Titanium.UI.iPhone.SystemButton.REFRESH
 	});
 
-	
 	getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 		var data = JSON.parse(_respData);
 		schedule_table = buildTableView(data.schedule);
 		win.add(schedule_table);
 		activity_indicator.hide();
 	});
-	
 	//attach button bar events
 	button_bar.addEventListener('click', function(e) {
 		var index = e.index;
 		if(index == 0) {
 			getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
-				var data = JSON.parse(_respData);	
+				var data = JSON.parse(_respData);
 				schedule_table = buildTableView(data.schedule);
 				win.add(schedule_table);
 				activity_indicator.hide();
@@ -87,10 +85,10 @@ win.addEventListener('focus', function() {
 		}
 		if(index == 1) {
 			getReunionData('/party_schedule/' + registration.code, function(_respData) {
-			//getReunionData('/party_schedule/', function(_respData) {
+				//getReunionData('/party_schedule/', function(_respData) {
 				var data = JSON.parse(_respData);
 				schedule_table = buildTableView(data.schedule);
-				
+
 				win.add(schedule_table);
 				activity_indicator.hide();
 
@@ -128,7 +126,6 @@ win.addEventListener('focus', function() {
 			activity_indicator.hide();
 		});
 	});
-	
 	buildSettingsButton();
 
 	function buildReloadButton(options) {
@@ -168,13 +165,13 @@ win.addEventListener('focus', function() {
 	/**
 	 * @return object
 	 * @param array
-	 * 
-	 * This function takes a JSON object 
+	 *
+	 * This function takes a JSON object
 	 * and returns a table view.
 	 */
 	function buildTableView(schedule) {
 		Titanium.API.info("Building table view [params]: " + JSON.stringify(schedule));
-		
+
 		var last_date = null;
 
 		var rows = [];
@@ -197,9 +194,9 @@ win.addEventListener('focus', function() {
 				},
 				top : 0,
 				left : 5,
-				bottom: 15
+				bottom : 15
 			});
-			
+
 			var lbl2 = Ti.UI.createLabel({
 				text : event.start_time + '-' + event.end_time,
 				textAlign : 'left',
@@ -211,7 +208,7 @@ win.addEventListener('focus', function() {
 				left : 5,
 				top : 40
 			});
-			
+
 			var lbl3 = Ti.UI.createLabel({
 				text : event.location_name,
 				textAlign : 'left',
@@ -243,7 +240,7 @@ win.addEventListener('focus', function() {
 			top : 39,
 			backgroundImage : '../images/background-notile.png',
 		});
-		
+
 		if(schedule.length == 0) {
 			tableview.style = Titanium.UI.iPhone.TableViewStyle.GROUPED;
 			var empty_label = Ti.UI.createLabel({
@@ -270,6 +267,7 @@ win.addEventListener('focus', function() {
 
 		// create table view event listener
 		tableview.addEventListener('click', function(e) {
+
 			Ti.API.info(e);
 
 			var win = Titanium.UI.createWindow({
@@ -303,7 +301,6 @@ win.addEventListener('focus', function() {
 					fontSize : 15,
 					fontWeight : 'bold'
 				},
-				//minimumFontSize : 10,
 				top : 5,
 				left : 12,
 				height : 35,
@@ -366,10 +363,6 @@ win.addEventListener('focus', function() {
 			mapRow.add(mapLabel);
 			descriptionRow.add(eventDescriptionLabel);
 
-			//push event data onto our new array.
-			
-			
-	
 			//Don't put add a faulty location into our table.
 			if(event.location_name) {
 				event_info_data.push(mainInfoRow, mapRow, descriptionRow);
@@ -386,11 +379,11 @@ win.addEventListener('focus', function() {
 
 			win.add(event_detail_view);
 
+
 			event_detail_view.addEventListener('click', function(e) {
-				
+
 				//Ti.API.info("____________HI " + event.latitude);
 				if(e.index == 1) {
-					//Ti.Platform.openURL("http://maps.google.com/maps?saddr=" + event.latitude + "," + event.longitude);
 					var map_win = Titanium.UI.createWindow({
 						barColor : '#4a85c8',
 						navBarHidden : false,
@@ -438,11 +431,6 @@ win.addEventListener('focus', function() {
 			showClickEventInfo(e, true);
 		});
 		return tableview;
-	}
-	
-	function matchLink(text) {
-  		var exp = '/(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig';
-  		return text.match(exp); 
 	}
 
 });

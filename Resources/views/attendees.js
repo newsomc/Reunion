@@ -1,4 +1,5 @@
 /**
+ * @file
  * @author Clint Newsom
  * 02-08-2012
  * cn2284@columbia.edu
@@ -47,7 +48,7 @@ win.addEventListener('focus', function() {
 		enabled : false
 	}];
 
-	var button_bar = Titanium.UI.createTabbedBar({
+	var button_bar = Titanium.UI.iOS.createTabbedBar({
 		labels : buttons,
 		top : 5,
 		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
@@ -102,9 +103,9 @@ win.addEventListener('focus', function() {
 	win.add(button_bar);
 
 	/**
+	 * @param json array
 	 * @return table object.
 	 */
-	
 	function createAttendeeTableView(attendees) {
 
 		var last_cohort_abbr = null;

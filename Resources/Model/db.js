@@ -55,16 +55,12 @@ var db = ( function() {
 	api.getYearSchoolAsText = function() {
 		var conn = Titanium.Database.open('reunion');
 		var rows = conn.execute('SELECT * FROM YEAR_SCHOOL');
-
 		while(rows.isValidRow()) {
 			var schoolYear = rows.field(1) + " " + rows.field(0);
-			//Titanium.API.info(rows.field(1) + '\n' + rows.field(0));
 			rows.next();
 		}
 		conn.close();
-		Titanium.API.debug("SCHOOLYEAR: " + schoolYear);
 		return schoolYear;
-
 	}
 
 	api.getUserPrefs = function(){
