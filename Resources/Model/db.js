@@ -1,5 +1,10 @@
 /**
- * DB FUNCTIONS
+ * /**
+ * @author Clint Newsom
+ * 02-08-2012
+ * cn2284@columbia.edu
+ * 
+ * DB Class.
  */
 
 var db = ( function() {
@@ -62,7 +67,6 @@ var db = ( function() {
 
 	}
 
-	//api.getYearSchool = function() {
 	api.getUserPrefs = function(){
 		var conn = Titanium.Database.open('reunion');
 		var rows = conn.execute('SELECT * FROM YEAR_SCHOOL');
@@ -85,7 +89,6 @@ var db = ( function() {
 
 	api.updateYearSchool = function(year, school, school_abbr, cohort_prefix) {
 		var conn = Titanium.Database.open('reunion');
-		//conn.execute('UPDATE YEAR_SCHOOL SET SCHOOL="' + school + '", YEAR="' + year + '"');
 		conn.execute('UPDATE YEAR_SCHOOL SET YEAR=(?), SCHOOL=(?), SCHOOL_ABBR=(?), COHORT_PREFIX=(?)', year, school, school_abbr, cohort_prefix);
 		conn.close();
 	}
@@ -93,15 +96,9 @@ var db = ( function() {
 	api.deleteAll = function() {
 		var conn = Titanium.Database.open('reunion');
 		conn.execute('DELETE FROM YEAR_SCHOOL');
+		conn.execute('DELETE FROM REG_CODE');
 		conn.close();
 	}
-	/*
-	 api.createTest = function(){
-	 var conn = Titanium.Database.open('reunion');
-	 conn.execute('INSERT INTO YEAR_SCHOOL (YEAR, SCHOOL ) VALUES(?,?)', '2007', 'Columbia College');
-	 conn.close();
-	 }
-	 */
 
 	api.getRegCode = function() {
 		var conn = Titanium.Database.open('reunion');

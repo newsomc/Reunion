@@ -1,3 +1,9 @@
+/**
+ * @author Clint Newsom
+ * 02-08-2012
+ * cn2284@columbia.edu
+ */
+
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/picker.js');
 

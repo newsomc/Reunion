@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @author Clint Newsom
+ * 02-08-2012
+ * cn2284@columbia.edu
+ */
+
 var win = Titanium.UI.currentWindow;
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
@@ -50,43 +57,43 @@ win.addEventListener('focus', function() {
 
 	win.add(button_bar);
 
-	//xhr: request remote data
+	//Get user defined prefs.
 	var info = db.getUserPrefs();
+	var registration = db.getRegCode();
+	var cohortAbbr =  info.cohort_prefix + info.year;
+		
 	var reload_button = Titanium.UI.createButton({
 		systemButton : Titanium.UI.iPhone.SystemButton.REFRESH
 	});
-	//requestReunionBaseScheduleData(info.school_abbr, info.cohort_prefix + info.year);
 
-	getReunionData('/schedule/CC/cc2007', function(_respData) {
+	
+	getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 		var data = JSON.parse(_respData);
-		schedule_table = createTableView(data.schedule);
+		schedule_table = buildTableView(data.schedule);
 		win.add(schedule_table);
 		activity_indicator.hide();
 	});
+	
 	//attach button bar events
 	button_bar.addEventListener('click', function(e) {
 		var index = e.index;
 		if(index == 0) {
-			getReunionData('/schedule/CC/cc2007', function(_respData) {
-				var data = JSON.parse(_respData);
-				schedule_table = createTableView(data.schedule);
+			getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
+				var data = JSON.parse(_respData);	
+				schedule_table = buildTableView(data.schedule);
 				win.add(schedule_table);
 				activity_indicator.hide();
 			});
 		}
 		if(index == 1) {
-			getReunionData('/party_schedule/2s4z', function(_respData) {
-								var data = JSON.parse(_respData);
-				schedule_table = createTableView(data.schedule);
+			getReunionData('/party_schedule/' + registration.code, function(_respData) {
+			//getReunionData('/party_schedule/', function(_respData) {
+				var data = JSON.parse(_respData);
+				schedule_table = buildTableView(data.schedule);
+				
 				win.add(schedule_table);
 				activity_indicator.hide();
 
-/*
-				var data = JSON.parse(_respData);
-				my_schedule = createTableView(data.schedule);
-				schedule_table.hide();
-				win.add(my_schedule);
-				activity_indicator.hide();*/
 			});
 		}
 	});
@@ -114,22 +121,16 @@ win.addEventListener('focus', function() {
 		win.add(activity_indicator);
 
 		//request data.
-		//requestReunionBaseScheduleData(info.school_abbr, info.cohort_prefix + info.year);
-		getReunionData('/schedule/CC/cc2007', function(_respData) {
+		getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 			var data = JSON.parse(_respData);
-			schedule_table = createTableView(data.schedule);
+			schedule_table = buildTableView(data.schedule);
 			win.add(schedule_table);
 			activity_indicator.hide();
 		});
-		/*Ti.App.addEventListener('data.received', function(data) {
-		 schedule_table = createTableView(data.schedule);
-		 win.add(schedule_table);
-		 activity_indicator.hide();
-		 });*/
 	});
+	
 	buildSettingsButton();
 
-	//});
 	function buildReloadButton(options) {
 		var reload_button = Titanium.UI.createButton({
 			systemButton : Titanium.UI.iPhone.SystemButton.REFRESH
@@ -138,7 +139,6 @@ win.addEventListener('focus', function() {
 		win.setLeftNavButton(reload_button);
 
 		reload_button.addEventListener('click', function() {
-			//alert('hi');
 			reload_button.systemButton = Titanium.UI.iPhone.SystemButton.ACTIVITY;
 		});
 	}
@@ -165,11 +165,16 @@ win.addEventListener('focus', function() {
 		});
 	}
 
-
-	// create table view data object
-	function createTableView(schedule) {
-		//Titanium.API.info("++++ " + JSON.stringify(schedule));
-
+	/**
+	 * @return object
+	 * @param array
+	 * 
+	 * This function takes a JSON object 
+	 * and returns a table view.
+	 */
+	function buildTableView(schedule) {
+		Titanium.API.info("Building table view [params]: " + JSON.stringify(schedule));
+		
 		var last_date = null;
 
 		var rows = [];
@@ -179,7 +184,7 @@ win.addEventListener('focus', function() {
 
 			var row = Ti.UI.createTableViewRow({
 				hasChild : true,
-				height : 55,
+				height : 68,
 				hasDetail : true
 			});
 
@@ -190,8 +195,11 @@ win.addEventListener('focus', function() {
 					fontWeight : 'bold',
 					fontSize : 14
 				},
-				left : 5
+				top : 0,
+				left : 5,
+				bottom: 15
 			});
+			
 			var lbl2 = Ti.UI.createLabel({
 				text : event.start_time + '-' + event.end_time,
 				textAlign : 'left',
@@ -201,8 +209,9 @@ win.addEventListener('focus', function() {
 					fontSize : 13
 				},
 				left : 5,
-				top : 35
+				top : 40
 			});
+			
 			var lbl3 = Ti.UI.createLabel({
 				text : event.location_name,
 				textAlign : 'left',
@@ -212,7 +221,7 @@ win.addEventListener('focus', function() {
 					fontSize : 13
 				},
 				left : 5,
-				top : 35,
+				top : 40,
 				left : 130
 			});
 
@@ -232,10 +241,11 @@ win.addEventListener('focus', function() {
 		var tableview = Titanium.UI.createTableView({
 			data : rows,
 			top : 39,
-			backgroundImage : '../images/background-notile.png'
+			backgroundImage : '../images/background-notile.png',
 		});
-
+		
 		if(schedule.length == 0) {
+			tableview.style = Titanium.UI.iPhone.TableViewStyle.GROUPED;
 			var empty_label = Ti.UI.createLabel({
 				top : 5,
 				left : 20,
@@ -268,19 +278,18 @@ win.addEventListener('focus', function() {
 			});
 
 			var event = schedule[e.index];
-			
 			event_info_data = [];
-			
+
 			var mainInfoRow = Titanium.UI.createTableViewRow({
 				height : 66,
 				className : 'mainInfoRow'
 			});
-			
+
 			var mapRow = Titanium.UI.createTableViewRow({
 				height : 46,
 				className : 'mapRow'
 			});
-			
+
 			var descriptionRow = Titanium.UI.createTableViewRow({
 				height : 'auto',
 				className : 'descriptionRow',
@@ -294,32 +303,32 @@ win.addEventListener('focus', function() {
 					fontSize : 15,
 					fontWeight : 'bold'
 				},
-				minimumFontSize : 10,
+				//minimumFontSize : 10,
 				top : 5,
 				left : 12,
 				height : 35,
 				width : 'auto'
 			});
-			
+
 			var eventTimeLabel = Ti.UI.createLabel({
 				color : '#000000',
 				text : event.start_time + "-" + event.end_time,
 				font : {
 					fontSize : 14
 				},
-				top : 25,
+				top : 35,
 				left : 12,
 				height : 30,
 				width : 170
 			});
-			
+
 			var eventLocationLabel = Ti.UI.createLabel({
 				color : '#000000',
 				text : event.location_name,
 				font : {
 					fontSize : 14
 				},
-				top : 40,
+				top : 50,
 				left : 12,
 				height : 30,
 				width : 'auto'
@@ -344,33 +353,41 @@ win.addEventListener('focus', function() {
 				font : {
 					fontSize : 12
 				},
-				top : 10,
-				bottom : 10,
+				top : 15,
+				bottom : 15,
 				left : 12,
+				right : 12,
 				height : 'auto',
 				width : 'auto'
 			});
-			
+
 			//add UI elements to screen.
 			mainInfoRow.add(eventTitleLabel, eventTimeLabel, eventLocationLabel);
 			mapRow.add(mapLabel);
 			descriptionRow.add(eventDescriptionLabel);
 
 			//push event data onto our new array.
-			event_info_data.push(mainInfoRow, mapRow, descriptionRow);
+			
+			
+	
+			//Don't put add a faulty location into our table.
+			if(event.location_name) {
+				event_info_data.push(mainInfoRow, mapRow, descriptionRow);
+			} else {
+				event_info_data.push(mainInfoRow, descriptionRow);
+			}
 
 			//create the event detail view.
 			var event_detail_view = Titanium.UI.createTableView({
 				data : event_info_data,
 				style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-				backgroundImage : '../images/background.png'
+				backgroundImage : '../images/background-notile.png'
 			});
 
 			win.add(event_detail_view);
 
 			event_detail_view.addEventListener('click', function(e) {
-				//Ti.API.info(e);
-				//var event = schedule[e.index];
+				
 				//Ti.API.info("____________HI " + event.latitude);
 				if(e.index == 1) {
 					//Ti.Platform.openURL("http://maps.google.com/maps?saddr=" + event.latitude + "," + event.longitude);
@@ -406,14 +423,11 @@ win.addEventListener('focus', function() {
 						userLocation : true,
 						annotations : [annotation]
 					});
-					
+
 					win.add(mapview);
 					mapview.selectAnnotation(annotation);
-					//mapview.open();
 				}
 			});
-			
-
 
 			Titanium.UI.currentTab.open(win, {
 				animated : true
@@ -424,6 +438,11 @@ win.addEventListener('focus', function() {
 			showClickEventInfo(e, true);
 		});
 		return tableview;
+	}
+	
+	function matchLink(text) {
+  		var exp = '/(b(https?|ftp|file)://[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig';
+  		return text.match(exp); 
 	}
 
 });

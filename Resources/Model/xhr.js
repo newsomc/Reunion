@@ -1,3 +1,9 @@
+/**
+ * @author Clint Newsom
+ * 02-08-2012
+ * cn2284@columbia.edu
+ */
+
 function getReunionData(url_params, _success, _error) {
  
    var xhr = Ti.Network.createHTTPClient(); // returns an instance of HTTPClient
@@ -15,14 +21,8 @@ function getReunionData(url_params, _success, _error) {
        } 
    };
  
-   xhr.open('GET','https://chameleon.college.columbia.edu/reunion_base/service' + url_params, true);
+   xhr.open('GET','https://ccit.college.columbia.edu/reunion-base/service' + url_params, true);
+   //xhr.open('GET','https://chameleon.college.columbia.edu/reunion_base/service' + url_params, true);
+   Ti.API.info('https://ccit.college.columbia.edu/reunion-base/service' + url_params);
    xhr.send(); 
 }
-
-/**
- * getReunionData('/schedule/CC/cc2007', function(_respData){
-    var data = JSON.parse(_respData);  
-    var test = JSON.stringify(data);
-	Ti.API.info(test);
-});
- */

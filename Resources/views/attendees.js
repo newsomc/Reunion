@@ -1,3 +1,9 @@
+/**
+ * @author Clint Newsom
+ * 02-08-2012
+ * cn2284@columbia.edu
+ */
+
 var win = Titanium.UI.currentWindow;
 
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
@@ -7,7 +13,7 @@ Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
 win.addEventListener('focus', function() {
 
 	var info = db.getUserPrefs();
-	
+
 	setUpWindow(info.school);
 
 	var info = db.getUserPrefs();
@@ -51,6 +57,9 @@ win.addEventListener('focus', function() {
 	});
 
 	//pull data.
+	activity_indicator.show();
+	win.add(activity_indicator);
+
 	getReunionData('/attendees/' + info.school_abbr, function(_respData) {
 		var data = JSON.parse(_respData);
 		Ti.API.info(JSON.stringify(data));
@@ -68,7 +77,7 @@ win.addEventListener('focus', function() {
 		});
 
 		if(index == 0) {
-			activity_indicator.show();
+			Ti.API.info('/attendees/' + info.school_abbr);
 			getReunionData('/attendees/' + info.school_abbr, function(_respData) {
 				var data = JSON.parse(_respData);
 				Ti.API.info(JSON.stringify(data));
@@ -78,7 +87,7 @@ win.addEventListener('focus', function() {
 			});
 		}
 		if(index == 1) {
-			activity_indicator.show();
+			Ti.API.info('/attendees/' + info.school_abbr + '/' + info.year);
 			getReunionData('/attendees/' + info.school_abbr + '/' + info.year, function(_respData) {
 				var data = JSON.parse(_respData);
 				Ti.API.info(JSON.stringify(data));
@@ -90,9 +99,12 @@ win.addEventListener('focus', function() {
 		}
 	});
 
-	activity_indicator.show();
 	win.add(button_bar);
 
+	/**
+	 * @return table object.
+	 */
+	
 	function createAttendeeTableView(attendees) {
 
 		var last_cohort_abbr = null;
@@ -102,7 +114,7 @@ win.addEventListener('focus', function() {
 			var registrant = attendees[i];
 
 			var row = Ti.UI.createTableViewRow({
-				title: registrant.firstname + ' ' + registrant.lastname,
+				title : registrant.firstname + ' ' + registrant.lastname,
 				hasChild : false,
 				height : 55,
 				hasDetail : false
@@ -120,21 +132,24 @@ win.addEventListener('focus', function() {
 			showCancel : false,
 			hintText : 'search'
 		});
-
+		
 		var tableview = Titanium.UI.createTableView({
 			data : rows,
-			search : search,
 			top : 39,
 			style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
 			backgroundImage : '../images/background-notile.png'
 		});
+
+		if(attendees.length != 0) {
+			tableview.search = search;
+		} 
 
 		if(attendees.length == 0) {
 			var empty_label = Ti.UI.createLabel({
 				top : 5,
 				left : 20,
 				right : 20,
-				text : 'There is currently no attendees. Check again soon!',
+				text : 'There are currently no attendees. Check again soon!',
 				font : {
 					fontSize : 15,
 					fontWeight : 'bold'
@@ -166,31 +181,5 @@ win.addEventListener('focus', function() {
 		//Titanium.UI.currentWindow.add(tableview);
 		return tableview;
 	}
-
-	/*
-	 //OLD STUFF
-	 function createAttendeeTableView(json_data) {
-	 for(keys in json_data) {
-	 if(keys == '') {
-	 keys = 'Guests';
-	 }
-
-	 var head = Ti.UI.createTableViewSection({
-	 headerTitle : keys
-	 });
-
-	 for(var i = 0; i < s[keys].length; i++) {
-	 rows = Ti.UI.createTableViewRow({
-	 title : json_data[keys][i].firstname + " " + json_data[keys][i].lastname,
-	 });
-	 attendees.push(rows);
-	 }
-	 attendees.push(head);
-	 }
-	 tableview.setData(json_data);
-	 }
-	 //OLD STUFF
-
-	 */
 
 });

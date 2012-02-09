@@ -1,3 +1,9 @@
+/**
+ * @author Clint Newsom
+ * 02-08-2012
+ * cn2284@columbia.edu
+ */
+
 var win = Titanium.UI.currentWindow;
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
