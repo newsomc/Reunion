@@ -18,8 +18,11 @@ function getReunionData(url_params, _success, _error) {
        //Titanium.API.log('INFO', e.message);
        if (_error) {
           _error(e);
+          alert('There was an error with this request. Please try again later.');
        } 
    };
+ 
+   xhr.setTimeout(15000); 
  
    xhr.open('GET','https://ccit.college.columbia.edu/reunion-base/service' + url_params, true);
    //xhr.open('GET','https://chameleon.college.columbia.edu/reunion_base/service' + url_params, true);

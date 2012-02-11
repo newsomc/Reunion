@@ -7,16 +7,17 @@
 var win = Titanium.UI.currentWindow;
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
 
 win.addEventListener('focus', function() {
 	setUpWindow('Information');
 
 	var info = db.getUserPrefs();
-	
+
 	if(info.school_abbr == "CC") {
 		var filename = 'cc-crown-for-info-screen.png';
 	}
-	
+
 	if(info.school_abbr == "SEAS") {
 		var filename = 'ce-crown-for-info-screen.png';
 	}
@@ -29,6 +30,26 @@ win.addEventListener('focus', function() {
 	var logo_fn = Ti.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, 'images/' + filename);
 	var right_pos = 19;
 	var left_pos = 90;
+	var info_table;
+
+	var activity_indicator = Titanium.UI.createActivityIndicator({
+		height : 50,
+		width : 150,
+		style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
+		font : {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 15,
+			fontWeight : 'bold'
+		},
+		backgroundColor : '#000',
+		opacity : 0.5,
+		borderRadius : 5,
+		color : 'white',
+		message : 'Loading...',
+	});
+
+	activity_indicator.show();
+	win.add(activity_indicator);
 
 	var logo = Titanium.UI.createImageView({
 		image : logo_fn,
@@ -117,37 +138,93 @@ win.addEventListener('focus', function() {
 	});
 
 	//Add table header objects to screen.
+
 	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
+	var info = db.getUserPrefs();
+	Ti.API.info('/information/' + info.school_abbr.toLowerCase());
 
-	//This table will need to be created in Reunion base. 
-	var inputData = [{
-		title : 'Registration'
-	}, {
-		title : 'Early Bird Discount',
-		header : '',
-		hasChild : true
-	}, {
-		title : 'Confirmation',
-		hasChild : true
-	}, {
-		title : 'Cancellation',
-		hasChild : true
-	}, {
-		title : 'Lodging',
-		hasChild : true
-	}, {
-		title : 'Parking',
-		hasChild : true
-	}];
-
-	var tableView = Titanium.UI.createTableView({
-		data : inputData,
-		style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-		headerView : tableHeader,
-		backgroundImage : '../images/background-notile.png'
+	getReunionData('/information/' + info.school_abbr.toLowerCase(), function(_respData) {
+		var data = JSON.parse(_respData);
+		info_table = buildInfoTable(data.information);
+		win.add(info_table);
+		activity_indicator.hide();
 	});
+	//This table will need to be created in Reunion base.
+	function buildInfoTable(information) {
 
-	win.add(tableView);
+		Ti.API.info(information);
+
+		var rows = [];
+
+		for(var i = 0; i < information.length; i++) {
+
+			var info = information[i];
+
+			var row = Ti.UI.createTableViewRow({
+				title : info.title,
+				hasChild : true,
+				height : 45,
+				hasDetail : true
+			});
+
+			rows.push(row);
+		}
+
+		var table_view = Titanium.UI.createTableView({
+			data : rows,
+			style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+			headerView : tableHeader,
+			backgroundImage : '../images/background-notile.png'
+		});
+
+		table_view.addEventListener('click', function(e) {
+
+			// event data
+			var site_info = information[e.index];
+
+			var info_detail_win = Titanium.UI.createWindow({
+				title : 'Info',
+				barColor : '#4a85c8'
+			});
+
+			var info_detail_data = [];
+
+			var descriptionRow = Titanium.UI.createTableViewRow({
+				height : 'auto',
+			});
+
+			var infoDescriptionView = Ti.UI.createWebView({
+				html : '<html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></head><body style=\"font-family: Helvetica;font-size:14px;\"> ' + site_info.body + '</body></html>',
+				top : 5,
+				bottom : 15,
+				left : 12,
+				right : 12,
+				height : 500
+			});
+
+			descriptionRow.add(infoDescriptionView);
+			info_detail_data.push(descriptionRow);
+
+			//create the event detail view.
+			var info_detail_view = Titanium.UI.createTableView({
+				data : info_detail_data,
+				style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+				backgroundImage : '../images/background-notile.png'
+			});
+
+			//my_win.open();
+
+			//alert(e.row);
+			//e.row.animate({animationStyle: Titanium.UI.iPhone.RowAnimationStyle.RIGHT});
+
+			info_detail_win.add(info_detail_view);
+			Titanium.UI.currentTab.open(info_detail_win, {
+				animated : true
+			});
+
+		});
+		return table_view;
+	}
 
 	var settings_win = Titanium.UI.createWindow({
 		title : 'Settings',
@@ -170,19 +247,5 @@ win.addEventListener('focus', function() {
 
 	settings_button.addEventListener('click', function() {
 		settings_win.open();
-	});
-
-	tableView.addEventListener('click', function(e) {
-		// event data
-		var index = e.index;
-		var section = e.section;
-		var row = e.row;
-		var rowdata = e.rowData;
-		if(index == 0) {
-			Ti.Platform.openURL('http://www.columbia.edu');
-		}
-		if(index == 1) {
-			alert('second');
-		}
 	});
 });

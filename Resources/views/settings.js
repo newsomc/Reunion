@@ -177,7 +177,6 @@ win.add(tableView);
 win.add(picker_view);
 
 //Set picker to current user prefs.
-
 win.addEventListener('open', function(e) {
 	if(prefs.school_abbr == 'CC') {
 		picker.view.setSelectedRow(0, 0, false);

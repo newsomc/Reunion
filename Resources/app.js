@@ -111,6 +111,7 @@ var cancel = new reunion.Cancel({
 		picker_view.animate(slide_out);
 	}
 });
+
 var spacer = new reunion.Spacer();
 var toolbar = new reunion.ToolBarClass([cancel.view, spacer.view, done.view]);
 

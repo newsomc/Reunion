@@ -15,6 +15,7 @@ win.addEventListener('focus', function() {
 	setUpWindow('Schedule');
 
 	var schedule_table;
+	var my_index = 0;
 
 	var activity_indicator = Titanium.UI.createActivityIndicator({
 		height : 50,
@@ -51,7 +52,7 @@ win.addEventListener('focus', function() {
 		top : 10,
 		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
 		height : 20,
-		index : 0,
+		index : my_index,
 		backgroundColor : '#4a85c8'
 	});
 
@@ -81,6 +82,7 @@ win.addEventListener('focus', function() {
 				schedule_table = buildTableView(data.schedule);
 				win.add(schedule_table);
 				activity_indicator.hide();
+				my_index = 0;
 			});
 		}
 		if(index == 1) {
@@ -88,11 +90,12 @@ win.addEventListener('focus', function() {
 				//getReunionData('/party_schedule/', function(_respData) {
 				var data = JSON.parse(_respData);
 				schedule_table = buildTableView(data.schedule);
-
 				win.add(schedule_table);
 				activity_indicator.hide();
+				my_index = 1;
 
 			});
+			
 		}
 	});
 
@@ -279,7 +282,7 @@ win.addEventListener('focus', function() {
 			event_info_data = [];
 
 			var mainInfoRow = Titanium.UI.createTableViewRow({
-				height : 66,
+				height : 'auto',
 				className : 'mainInfoRow'
 			});
 
@@ -344,24 +347,19 @@ win.addEventListener('focus', function() {
 				width : 170
 			});
 
-			var eventDescriptionLabel = Ti.UI.createLabel({
-				color : '#000000',
-				text : event.description,
-				font : {
-					fontSize : 12
-				},
+			var eventDescriptionView = Ti.UI.createWebView({
+				html : '<html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></head><body style=\"font-family: Helvetica;font-size:13px;\"> ' + event.description + '</body></html>',
 				top : 15,
 				bottom : 15,
 				left : 12,
 				right : 12,
-				height : 'auto',
-				width : 'auto'
+				height: 250
 			});
 
 			//add UI elements to screen.
 			mainInfoRow.add(eventTitleLabel, eventTimeLabel, eventLocationLabel);
 			mapRow.add(mapLabel);
-			descriptionRow.add(eventDescriptionLabel);
+			descriptionRow.add(eventDescriptionView);
 
 			//Don't put add a faulty location into our table.
 			if(event.location_name) {
@@ -379,7 +377,6 @@ win.addEventListener('focus', function() {
 
 			win.add(event_detail_view);
 
-
 			event_detail_view.addEventListener('click', function(e) {
 
 				//Ti.API.info("____________HI " + event.latitude);
@@ -395,7 +392,7 @@ win.addEventListener('focus', function() {
 						latitude : event.latitude,
 						longitude : event.longitude,
 						title : event.location_name,
-						subtitle : 'Test',
+						//subtitle : 'Test',
 						animate : true,
 						leftButton : '../images/atlanta.jpg',
 						image : "../images/boston_college.png"
