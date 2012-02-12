@@ -15,7 +15,6 @@ win.addEventListener('focus', function() {
 	setUpWindow('Schedule');
 
 	var schedule_table;
-	var my_index = 0;
 
 	var activity_indicator = Titanium.UI.createActivityIndicator({
 		height : 50,
@@ -52,7 +51,6 @@ win.addEventListener('focus', function() {
 		top : 10,
 		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
 		height : 20,
-		index : my_index,
 		backgroundColor : '#4a85c8'
 	});
 
@@ -69,35 +67,34 @@ win.addEventListener('focus', function() {
 
 	getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 		var data = JSON.parse(_respData);
-		schedule_table = buildTableView(data.schedule);
+		schedule_table = buildTableView(data.schedule, button_bar.getIndex());
 		win.add(schedule_table);
 		activity_indicator.hide();
 	});
 	//attach button bar events
 	button_bar.addEventListener('click', function(e) {
 		var index = e.index;
+		//TI.API.info("INDEX: " + index);
 		if(index == 0) {
 			getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 				var data = JSON.parse(_respData);
-				schedule_table = buildTableView(data.schedule);
+				schedule_table = buildTableView(data.schedule, button_bar.getIndex());
 				win.add(schedule_table);
 				activity_indicator.hide();
-				my_index = 0;
 			});
 		}
 		if(index == 1) {
 			getReunionData('/party_schedule/' + registration.code, function(_respData) {
 				//getReunionData('/party_schedule/', function(_respData) {
 				var data = JSON.parse(_respData);
-				schedule_table = buildTableView(data.schedule);
+				schedule_table = buildTableView(data.schedule, button_bar.getIndex());
 				win.add(schedule_table);
 				activity_indicator.hide();
-				my_index = 1;
-
 			});
-			
 		}
 	});
+
+	Ti.API.info('CLINT INDEX: ' + button_bar.getIndex());
 
 	win.setLeftNavButton(reload_button);
 
@@ -124,7 +121,7 @@ win.addEventListener('focus', function() {
 		//request data.
 		getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 			var data = JSON.parse(_respData);
-			schedule_table = buildTableView(data.schedule);
+			schedule_table = buildTableView(data.schedule, button_bar.getIndex());
 			win.add(schedule_table);
 			activity_indicator.hide();
 		});
@@ -172,12 +169,14 @@ win.addEventListener('focus', function() {
 	 * This function takes a JSON object
 	 * and returns a table view.
 	 */
-	function buildTableView(schedule) {
+	function buildTableView(schedule, bar_index) {
 		Titanium.API.info("Building table view [params]: " + JSON.stringify(schedule));
 
 		var last_date = null;
 
 		var rows = [];
+
+		//var my_index = bar_index;
 
 		for(var i = 0; i < schedule.length; i++) {
 			var event = schedule[i];
@@ -271,15 +270,14 @@ win.addEventListener('focus', function() {
 		// create table view event listener
 		tableview.addEventListener('click', function(e) {
 
-			Ti.API.info(e);
+			var event = schedule[e.index];
+
+			var event_info_data = [];
 
 			var win = Titanium.UI.createWindow({
 				barColor : '#477AAB',
 				title : 'Event Details'
 			});
-
-			var event = schedule[e.index];
-			event_info_data = [];
 
 			var mainInfoRow = Titanium.UI.createTableViewRow({
 				height : 'auto',
@@ -353,7 +351,7 @@ win.addEventListener('focus', function() {
 				bottom : 15,
 				left : 12,
 				right : 12,
-				height: 250
+				height : 250
 			});
 
 			//add UI elements to screen.
@@ -376,6 +374,11 @@ win.addEventListener('focus', function() {
 			});
 
 			win.add(event_detail_view);
+
+			win.addEventListener('close', function() {
+				Ti.API.info('INDEX: ' + bar_index);
+				button_bar.setIndex(bar_index);
+			});
 
 			event_detail_view.addEventListener('click', function(e) {
 
@@ -422,10 +425,7 @@ win.addEventListener('focus', function() {
 			Titanium.UI.currentTab.open(win, {
 				animated : true
 			});
-		});
 
-		tableview.addEventListener('longclick', function(e) {
-			showClickEventInfo(e, true);
 		});
 		return tableview;
 	}

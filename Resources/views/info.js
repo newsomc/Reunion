@@ -14,6 +14,8 @@ win.addEventListener('focus', function() {
 
 	var info = db.getUserPrefs();
 
+	Ti.API.info("PREFS: " + JSON.stringify(info));
+
 	if(info.school_abbr == "CC") {
 		var filename = 'cc-crown-for-info-screen.png';
 	}
@@ -137,9 +139,19 @@ win.addEventListener('focus', function() {
 		height : 85
 	});
 
+	/*
+
+	var table_view_one = Titanium.UI.createTableView({
+	data : registerRow,
+	style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+	headerView : tableHeader,
+	backgroundImage : '../images/background-notile.png'
+	});*/
+
 	//Add table header objects to screen.
 
 	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
+
 	var info = db.getUserPrefs();
 	Ti.API.info('/information/' + info.school_abbr.toLowerCase());
 
@@ -152,13 +164,20 @@ win.addEventListener('focus', function() {
 	//This table will need to be created in Reunion base.
 	function buildInfoTable(information) {
 
-		Ti.API.info(information);
+		information.unshift([{
+			"hasDetail" : true,
+			"hasChild" : true,
+			"height" : 45
+		}]);
 
 		var rows = [];
 
 		for(var i = 0; i < information.length; i++) {
 
 			var info = information[i];
+
+			information[0].title = "Register";
+			information[1].header = "";
 
 			var row = Ti.UI.createTableViewRow({
 				title : info.title,
@@ -170,6 +189,10 @@ win.addEventListener('focus', function() {
 			rows.push(row);
 		}
 
+		//rows.unshift(registerRow);
+
+		Ti.API.info(JSON.stringify(rows));
+
 		var table_view = Titanium.UI.createTableView({
 			data : rows,
 			style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
@@ -178,6 +201,7 @@ win.addEventListener('focus', function() {
 		});
 
 		table_view.addEventListener('click', function(e) {
+			var prefs = db.getUserPrefs();
 
 			// event data
 			var site_info = information[e.index];
@@ -212,15 +236,27 @@ win.addEventListener('focus', function() {
 				backgroundImage : '../images/background-notile.png'
 			});
 
-			//my_win.open();
-
-			//alert(e.row);
-			//e.row.animate({animationStyle: Titanium.UI.iPhone.RowAnimationStyle.RIGHT});
-
 			info_detail_win.add(info_detail_view);
-			Titanium.UI.currentTab.open(info_detail_win, {
-				animated : true
-			});
+
+			if(e.index != 0) {
+				Titanium.UI.currentTab.open(info_detail_win, {
+					animated : true
+				});
+			}
+
+			if(e.index == 0) {
+				//Ti.API.info("CLINT " + prefs.school_abbr);
+				if(prefs.school_abbr == 'CC') {
+					Ti.Platform.openURL('https://alumni.college.columbia.edu/reunion/register/home');
+				}
+				if(prefs.school_abbr == 'SEAS') {
+					Ti.Platform.openURL('https://alumni.engineering.columbia.edu/reunion/register/home');
+				}
+				if(prefs.school_abbr == 'GS') {
+					Ti.Platform.openURL('https://alumni.gs.columbia.edu/reunion/register/home');
+				}
+
+			}
 
 		});
 		return table_view;
