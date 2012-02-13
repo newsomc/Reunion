@@ -6,15 +6,20 @@
  */
 
 var win = Titanium.UI.currentWindow;
+
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
+
+var bar_flag = win.temp_flag;
 
 win.addEventListener('focus', function() {
 
 	setUpWindow('Schedule');
 
 	var schedule_table;
+
+	var current_tab_button = Titanium.App.Properties.getInt("bar_setting", 0);
 
 	var activity_indicator = Titanium.UI.createActivityIndicator({
 		height : 50,
@@ -51,6 +56,8 @@ win.addEventListener('focus', function() {
 		top : 10,
 		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
 		height : 20,
+		//index : 0,
+		index : current_tab_button,
 		backgroundColor : '#4a85c8'
 	});
 
@@ -65,24 +72,44 @@ win.addEventListener('focus', function() {
 		systemButton : Titanium.UI.iPhone.SystemButton.REFRESH
 	});
 
-	getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
-		var data = JSON.parse(_respData);
-		schedule_table = buildTableView(data.schedule, button_bar.getIndex());
-		win.add(schedule_table);
-		activity_indicator.hide();
-	});
+	if(current_tab_button == 0) {
+		getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
+			var data = JSON.parse(_respData);
+			schedule_table = buildTableView(data.schedule, button_bar.getIndex());
+			win.add(schedule_table);
+			activity_indicator.hide();
+		});
+	}
+	if(current_tab_button == 1) {
+		getReunionData('/party_schedule/' + registration.code, function(_respData) {
+			//getReunionData('/party_schedule/', function(_respData) {
+			var data = JSON.parse(_respData);
+			schedule_table = buildTableView(data.schedule, button_bar.getIndex());
+			win.add(schedule_table);
+			activity_indicator.hide();
+
+		});
+	}
+
 	//attach button bar events
 	button_bar.addEventListener('click', function(e) {
 		var index = e.index;
 		//TI.API.info("INDEX: " + index);
+
 		if(index == 0) {
 			getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
 				var data = JSON.parse(_respData);
 				schedule_table = buildTableView(data.schedule, button_bar.getIndex());
 				win.add(schedule_table);
 				activity_indicator.hide();
+
+				Titanium.App.Properties.setInt("bar_setting", index);
+				Titanium.App.fireEvent('app:clicked', {
+					bar_flag : button_bar.index
+				});
 			});
 		}
+
 		if(index == 1) {
 			getReunionData('/party_schedule/' + registration.code, function(_respData) {
 				//getReunionData('/party_schedule/', function(_respData) {
@@ -90,6 +117,11 @@ win.addEventListener('focus', function() {
 				schedule_table = buildTableView(data.schedule, button_bar.getIndex());
 				win.add(schedule_table);
 				activity_indicator.hide();
+
+				Titanium.App.Properties.setInt("bar_setting", index);
+				Titanium.App.fireEvent('app:clicked', {
+					bar_flag : button_bar.index
+				});
 			});
 		}
 	});
@@ -99,6 +131,8 @@ win.addEventListener('focus', function() {
 	win.setLeftNavButton(reload_button);
 
 	reload_button.addEventListener('click', function() {
+
+		var test = Titanium.App.Properties.getInt("bar_setting", 0);
 
 		var activity_indicator = Titanium.UI.createActivityIndicator({
 			height : 50,
@@ -118,13 +152,25 @@ win.addEventListener('focus', function() {
 		activity_indicator.show();
 		win.add(activity_indicator);
 
-		//request data.
-		getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
-			var data = JSON.parse(_respData);
-			schedule_table = buildTableView(data.schedule, button_bar.getIndex());
-			win.add(schedule_table);
-			activity_indicator.hide();
-		});
+		if(test == 0) {
+			getReunionData('/schedule/' + info.school_abbr + '/' + cohortAbbr, function(_respData) {
+				var data = JSON.parse(_respData);
+				schedule_table = buildTableView(data.schedule, button_bar.getIndex());
+				win.add(schedule_table);
+				activity_indicator.hide();
+			});
+		}
+		if(test == 1) {
+			getReunionData('/party_schedule/' + registration.code, function(_respData) {
+				//getReunionData('/party_schedule/', function(_respData) {
+				var data = JSON.parse(_respData);
+				schedule_table = buildTableView(data.schedule, button_bar.getIndex());
+				win.add(schedule_table);
+				activity_indicator.hide();
+
+			});
+		}
+
 	});
 	buildSettingsButton();
 

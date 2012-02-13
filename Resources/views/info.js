@@ -161,7 +161,8 @@ win.addEventListener('focus', function() {
 		win.add(info_table);
 		activity_indicator.hide();
 	});
-	//This table will need to be created in Reunion base.
+	
+
 	function buildInfoTable(information) {
 
 		information.unshift([{
