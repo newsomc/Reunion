@@ -115,7 +115,7 @@ var cancel = new reunion.Cancel({
 var spacer = new reunion.Spacer();
 var toolbar = new reunion.ToolBarClass([cancel.view, spacer.view, done.view]);
 
-//Add wrapped objects to current view.  
+//Add wrapped objects to current view.
 picker_view.add(picker.view);
 picker_view.add(toolbar.view);
 
@@ -143,21 +143,21 @@ drop_button.addEventListener('click', function() {
 });
 
 confirm_button.addEventListener('click', function() {
+
 	confirm_button.backgroundColor = '#7EA0C3';
 	confirm_button.color = 'black';
-	db.storeSchoolCohortYear(
-		picker.view.getSelectedRow(1).title, 
-		picker.view.getSelectedRow(0).title, 
-		picker.view.getSelectedRow(0).school_abbr,
-		picker.view.getSelectedRow(0).cohort_prefix
-	);
+	db.storeSchoolCohortYear(picker.view.getSelectedRow(1).title, 
+							 picker.view.getSelectedRow(0).title, 
+							 picker.view.getSelectedRow(0).school_abbr, 
+							 picker.view.getSelectedRow(0).cohort_prefix);
+
+	//first_time_window.close();
 	first_time_window.close({
 		transition : Titanium.UI.iPhone.AnimationStyle.CURL_UP
 	});
 	win.open();
 	tabGroup.open();
 });
-
 //Check if this is the first time loading the app.
 if(firstTime == true) {
 	first_time_window.add(picker_view);
