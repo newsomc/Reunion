@@ -83,7 +83,6 @@ regCodeData.addEventListener('focus', function() {
 	regCodeData.value = '';
 
 });
-
 // add values to rows.
 schoolYearRow.add(schoolYearLabel);
 schoolYearRow.add(schoolYearData);
@@ -125,17 +124,13 @@ var picker = new reunion.PickerClass({
 
 var done = new reunion.Done({
 	click : function() {
-		db.updateYearSchool(picker.view.getSelectedRow(1).title, 
-		                    picker.view.getSelectedRow(0).title, 
-		                    picker.view.getSelectedRow(0).school_abbr, 
-		                    picker.view.getSelectedRow(0).cohort_prefix);
+		db.updateYearSchool(picker.view.getSelectedRow(1).title, picker.view.getSelectedRow(0).title, picker.view.getSelectedRow(0).school_abbr, picker.view.getSelectedRow(0).cohort_prefix);
 		picker_view.animate(slide_out);
 	}
 });
 
 var cancel = new reunion.Cancel({
 	click : function() {
-		combo_box.show();
 		picker_view.animate(slide_out);
 	}
 });
@@ -164,14 +159,12 @@ settings_done.addEventListener('click', function() {
 		win.close();
 	}
 });
-
 // event functions
 tableView.addEventListener('click', function(eventObject) {
 	if(eventObject.rowData.className == "schoolYearRow") {
 		picker_view.animate(slide_in);
 	}
 });
-
 // build display
 win.add(tableView);
 win.add(picker_view);
@@ -195,13 +188,12 @@ win.addEventListener('open', function(e) {
 	var user_year = prefs.year;
 	//Ti.API.info("USER YEAR: " + user_year);
 	for( i = 0; i < reunion_years.length; i++) {
-		if(user_year == reunion_years[i]){
-			Ti.API.info('I: '+i);
+		if(user_year == reunion_years[i]) {
+			Ti.API.info('I: ' + i);
 			picker.view.setSelectedRow(1, i, false);
 		}
 	}
 
 });
-
 
 schoolYearData.text = db.getYearSchoolAsText();
