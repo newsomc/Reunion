@@ -3,7 +3,7 @@
  * @author Clint Newsom
  * 02-08-2012
  * cn2284@columbia.edu
- * 
+ *
  * DB Class.
  */
 
@@ -22,7 +22,7 @@ var db = ( function() {
 		var conn = Titanium.Database.open('reunion');
 		//conn.execute('INSERT INTO YEAR_SCHOOL (YEAR, SCHOOL ) VALUES(?,?)',picker.getSelectedRow(1).title, picker.getSelectedRow(0).title);
 		conn.execute('INSERT INTO YEAR_SCHOOL (YEAR, SCHOOL, SCHOOL_ABBR, COHORT_PREFIX) VALUES(?,?,?,?)', year, school, school_abbr, cohort_prefix);
-		Ti.API.info('STORING DATA: ' + year + school + ", " + school_abbr + cohort_prefix);
+		//Ti.API.info('STORING DATA: ' + year + school + ", " + school_abbr + cohort_prefix);
 		conn.close();
 	};
 
@@ -63,7 +63,7 @@ var db = ( function() {
 		return schoolYear;
 	}
 
-	api.getUserPrefs = function(){
+	api.getUserPrefs = function() {
 		var conn = Titanium.Database.open('reunion');
 		var rows = conn.execute('SELECT * FROM YEAR_SCHOOL');
 		var results = {};
@@ -78,7 +78,7 @@ var db = ( function() {
 			}
 		}
 		conn.close();
-		Titanium.API.debug("Results: >>>>>>>" + JSON.stringify(results));
+		//Titanium.API.debug("Results: >>>>>>>" + JSON.stringify(results));
 		return results;
 
 	}
@@ -101,7 +101,7 @@ var db = ( function() {
 		var rows = conn.execute('SELECT CODE FROM REG_CODE');
 		var results = {};
 
-		Titanium.API.info('ROW COUNT = ' + rows.getRowCount());
+		//Titanium.API.info('ROW COUNT = ' + rows.getRowCount());
 		if(rows.getRowCount() == null || rows.getRowCount() == 0) {
 
 			return 'No registration code is set';
@@ -114,21 +114,37 @@ var db = ( function() {
 				}
 			}
 			conn.close();
-			Titanium.API.debug("Results: " + JSON.stringify(results));
+			//Titanium.API.debug("Results: " + JSON.stringify(results));
 			return results;
 		}
 		conn.close();
 	};
 
+	api.validateRegCode = function(string) {
+		if(/^[a-zA-Z0-9]+$/.test(string)) {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
 	api.updateInsertRegCode = function(code) {
 		var conn = Titanium.Database.open('reunion');
 		var rows = conn.execute('SELECT CODE FROM REG_CODE');
-		Titanium.API.info('ROW COUNT = ' + rows.getRowCount());
-
+		//Titanium.API.info('ROW COUNT = ' + rows.getRowCount());
+		var isValid = this.validateRegCode(code);
+	
 		if(conn == '' || conn == null) {
 			return;
 		} else {
-
+			if(isValid === false){
+				alert('Registration codes may only be alphanumeric characters.');
+				return;
+			}
+			if(code == '') {
+				conn.execute('DELETE FROM REG_CODE');
+				return;
+			}
 			if(rows.getRowCount() == null || rows.getRowCount() == 0) {
 				conn.execute('INSERT INTO REG_CODE (CODE) VALUES (?)', code);
 				//conn.close();
