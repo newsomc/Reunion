@@ -33,8 +33,8 @@ var tabGroup = Titanium.UI.createTabGroup();
 for(var i in tabData) {
 	var win = Titanium.UI.createWindow({
 		url : tabData[i].url,
-		navBarHidden : (tabData[i].navBarHidden ? true : false),
-		tabBarHidden : (tabData[i].tabBarHidden ? true : false)
+		//navBarHidden : (tabData[i].navBarHidden ? true : false),
+		//tabBarHidden : (tabData[i].tabBarHidden ? true : false)
 	});
 
 	tabGroup.addTab(Titanium.UI.createTab({
