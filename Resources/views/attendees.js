@@ -8,36 +8,33 @@
 var win = Titanium.UI.currentWindow;
 
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
-Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/ui.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 
 win.addEventListener('focus', function() {
 
-	var info = db.getUserPrefs();
+	var prefs = db.getUserPrefs();
 
-	setUpWindow(info.school);
+	setUpWindow(prefs.school);
 
-	var info = db.getUserPrefs();
-	var attendee_table;
-	var attendee_year_table;
+	var cur_tab = Titanium.App.Properties.getInt("attendee_bar_setting", 0);
 
-	var activity_indicator = Titanium.UI.createActivityIndicator({
-		height : 50,
-		width : 150,
-		style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
-		font : {
-			fontFamily : 'Helvetica Neue',
-			fontSize : 15,
-			fontWeight : 'bold'
-		},
-		backgroundColor : '#000',
-		opacity : 0.5,
-		borderRadius : 5,
-		color : 'white',
-		message : 'Loading...',
+	var reload_button = Titanium.UI.createButton({
+		systemButton : Titanium.UI.iPhone.SystemButton.REFRESH
 	});
 
-	// button bar.
+	var activity_indicator = new reunion.ActivityIndicator();
+
+	Ti.API.info('hi');
+
+	var separator = Ti.UI.createView({
+		width : '100%',
+		height : 0.50,
+		backgroundColor : 'black',
+		top : 38
+	});
+
 	var buttons = [{
 		title : 'All',
 		width : 150,
@@ -53,61 +50,112 @@ win.addEventListener('focus', function() {
 		top : 5,
 		style : Titanium.UI.iPhone.SystemButtonStyle.BAR,
 		height : 30,
-		index : 0,
+		index : cur_tab,
 		backgroundColor : '#4a85c8'
 	});
 
-	//pull data.
-	activity_indicator.show();
-	win.add(activity_indicator);
-
-	getReunionData('/attendees/' + info.school_abbr, function(_respData) {
-		var data = JSON.parse(_respData);
-		Ti.API.info(JSON.stringify(data));
-		attendee_table = createAttendeeTableView(data.attendees);
-		win.add(attendee_table);
-		activity_indicator.hide();
+	//set up search bar
+	var search = Titanium.UI.createSearchBar({
+		showCancel : false,
+		hintText : 'search'
 	});
 
+	var tableview = Titanium.UI.createTableView({
+		top : 39,
+		search : search,
+		style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+		backgroundImage : '../images/background-notile.png'
+	});
+
+	/*
+	if(attendees.length != 0) {
+	tableview.search = search;
+	}
+
+	if(attendees.length == 0) {
+	var empty_label = Ti.UI.createLabel({
+	top : 5,
+	left : 20,
+	right : 20,
+	text : 'There are currently no attendees. Check again soon!',
+	font : {
+	fontSize : 15,
+	fontWeight : 'bold'
+	},
+	color : '#4D576D',
+	textAlign : 'center',
+	shadowColor : '#FAFAFA',
+	shadowOffset : {
+	x : 0,
+	y : 1
+	}
+	});
+
+	tableview.add(empty_label);
+	empty_label.show();
+	}*/
+
+	//search events.
+	search.addEventListener('change', function(e) {
+		e.value
+	});
+	search.addEventListener('return', function(e) {
+		search.blur();
+	});
+	search.addEventListener('cancel', function(e) {
+		search.blur();
+	});
+
+	Ti.API.info('Just before load');
+	requestReunionData('/attendees/' + prefs.school_abbr);
+
+	//set up events.
 	button_bar.addEventListener('click', function(e) {
 
 		var index = e.index;
 
-		var slide_out = Titanium.UI.createAnimation({
-			bottom : -251
-		});
-
 		if(index == 0) {
-			Ti.API.info('/attendees/' + info.school_abbr);
-			getReunionData('/attendees/' + info.school_abbr, function(_respData) {
-				var data = JSON.parse(_respData);
-				Ti.API.info(JSON.stringify(data));
-				attendee_table = createAttendeeTableView(data.attendees);
-				win.add(attendee_table);
-				activity_indicator.hide();
-			});
+			requestReunionData('/attendees/' + prefs.school_abbr);
 		}
 		if(index == 1) {
-			Ti.API.info('/attendees/' + info.school_abbr + '/' + info.year);
-			getReunionData('/attendees/' + info.school_abbr + '/' + info.year, function(_respData) {
-				var data = JSON.parse(_respData);
-				Ti.API.info(JSON.stringify(data));
-				attendee_year_table = createAttendeeTableView(data.attendees);
-				attendee_table.hide();
-				win.add(attendee_year_table);
-				activity_indicator.hide();
-			});
+			requestReunionData('/attendees/' + prefs.school_abbr + '/' + prefs.year);
 		}
 	});
 
-	win.add(button_bar);
+	reload_button.addEventListener('click', function() {
+
+		var cur_tab = Titanium.App.Properties.getInt("attendee_bar_setting", 0);
+		activity_indicator.view.show();
+
+		if(cur_tab == 0) {
+			requestReunionData('/attendees/' + prefs.school_abbr);
+		}
+		if(cur_tab == 1) {
+			requestReunionData('/attendees/' + prefs.school_abbr + '/' + prefs.year);
+		}
+
+	});
+	/**
+	 * @param string
+	 */
+	function requestReunionData(path) {
+		getReunionData(path, function(_respData) {
+			var data = JSON.parse(_respData);
+			var rows = buildTableRows(data.attendees);
+
+			tableview.setData(rows, {
+				animationStyle : Titanium.UI.iPhone.RowAnimationStyle.FADE
+			});
+			activity_indicator.view.hide();
+		});
+	}
 
 	/**
 	 * @param json array
-	 * @return table object.
+	 * @return Titanium table rows object.
 	 */
-	function createAttendeeTableView(attendees) {
-
+	function buildTableRows(attendees) {
+		Ti.API.info(attendees);
 		var last_cohort_abbr = null;
 		var rows = [];
 
@@ -128,59 +176,33 @@ win.addEventListener('focus', function() {
 			rows.push(row);
 		}
 
-		//set up search bar
-		var search = Titanium.UI.createSearchBar({
-			showCancel : false,
-			hintText : 'search'
-		});
-		
-		var tableview = Titanium.UI.createTableView({
-			data : rows,
-			top : 39,
-			style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-			backgroundImage : '../images/background-notile.png'
-		});
-
-		if(attendees.length != 0) {
-			tableview.search = search;
-		} 
-
-		if(attendees.length == 0) {
-			var empty_label = Ti.UI.createLabel({
-				top : 5,
-				left : 20,
-				right : 20,
-				text : 'There are currently no attendees. Check again soon!',
-				font : {
-					fontSize : 15,
-					fontWeight : 'bold'
-				},
-				color : '#4D576D',
-				textAlign : 'center',
-				shadowColor : '#FAFAFA',
-				shadowOffset : {
-					x : 0,
-					y : 1
-				}
-			});
-
-			tableview.add(empty_label);
-			empty_label.show();
-		}
-
-		//search events.
-		search.addEventListener('change', function(e) {
-			e.value
-		});
-		search.addEventListener('return', function(e) {
-			search.blur();
-		});
-		search.addEventListener('cancel', function(e) {
-			search.blur();
-		});
-		// add table view to the window
-		//Titanium.UI.currentWindow.add(tableview);
-		return tableview;
+		return rows;
 	}
 
+	activity_indicator.view.show();
+	win.add(button_bar, separator, tableview, activity_indicator.view);
+	win.setLeftNavButton(reload_button);
+	buildSettingsButton();
 });
+
+function buildSettingsButton() {
+	var settings_button = Ti.UI.createButton({
+		title : "settings",
+		image : "../images/settings-icon.png"
+	});
+
+	win.setRightNavButton(settings_button);
+
+	settings_button.addEventListener('click', function(e) {
+		var settings_win = Titanium.UI.createWindow({
+			title : 'Settings',
+			backgroundColor : '#A6B7C8',
+			statusBarHidden : true,
+			tabBarHidden : true,
+			modal : true,
+			url : "settings.js"
+		});
+
+		settings_win.open();
+	});
+}
