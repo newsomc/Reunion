@@ -8,14 +8,15 @@ var win = Titanium.UI.currentWindow;
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'views/setupWindow.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/db.js');
 Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/xhr.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory + 'Model/ui.js');
 
 win.addEventListener('focus', function() {
+
 	setUpWindow('Information');
 
 	var info = db.getUserPrefs();
 
-	Ti.API.info("PREFS: " + JSON.stringify(info));
-
+	//Ti.API.info("PREFS: " + JSON.stringify(info));
 	if(info.school_abbr == "CC") {
 		var filename = 'cc-crown-for-info-screen.png';
 	}
@@ -34,24 +35,7 @@ win.addEventListener('focus', function() {
 	var left_pos = 90;
 	var info_table;
 
-	var activity_indicator = Titanium.UI.createActivityIndicator({
-		height : 50,
-		width : 150,
-		style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
-		font : {
-			fontFamily : 'Helvetica Neue',
-			fontSize : 15,
-			fontWeight : 'bold'
-		},
-		backgroundColor : '#000',
-		opacity : 0.5,
-		borderRadius : 5,
-		color : 'white',
-		message : 'Loading...',
-	});
-
-	activity_indicator.show();
-	win.add(activity_indicator);
+	var activity_indicator = new reunion.ActivityIndicator();
 
 	var logo = Titanium.UI.createImageView({
 		image : logo_fn,
@@ -139,31 +123,44 @@ win.addEventListener('focus', function() {
 		height : 85
 	});
 
-	/*
+	var settings_win = Titanium.UI.createWindow({
+		title : 'Settings',
+		backgroundColor : '#A6B7C8',
+		statusBarHidden : true,
+		tabBarHidden : true,
+		modal : true,
+		url : "settings.js"
+	});
 
-	var table_view_one = Titanium.UI.createTableView({
-	data : registerRow,
-	style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-	headerView : tableHeader,
-	backgroundImage : '../images/background-notile.png'
-	});*/
+	var settings_button = Ti.UI.createButton({
+		title : "settings",
+		image : "../images/settings-icon.png",
+		width : 5,
+		opacity : 0.2,
+		color : '#A49BBA'
+	});
 
-	//Add table header objects to screen.
-
-	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
-
-	var info = db.getUserPrefs();
-	Ti.API.info('/information/' + info.school_abbr.toLowerCase());
+	var tableview = Titanium.UI.createTableView({
+		style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+		headerView : tableHeader,
+		backgroundImage : '../images/background-notile.png'
+	});
 
 	getReunionData('/information/' + info.school_abbr.toLowerCase(), function(_respData) {
 		var data = JSON.parse(_respData);
-		info_table = buildInfoTable(data.information);
-		win.add(info_table);
-		activity_indicator.hide();
+		if(!data){
+			activity_indicator.view.hide();
+		}
+		var rows = buildInfoRows(data.information);
+
+		tableview.setData(rows, {
+			animationStyle : Titanium.UI.iPhone.RowAnimationStyle.UP
+		});
+
+		activity_indicator.view.hide();
 	});
 	
-
-	function buildInfoTable(information) {
+	function buildInfoRows(information) {
 
 		information.unshift([{
 			"hasDetail" : true,
@@ -184,105 +181,69 @@ win.addEventListener('focus', function() {
 				title : info.title,
 				hasChild : true,
 				height : 45,
-				hasDetail : true
+				hasDetail : true,
+				node : info.nid,
+				node_title: info.title,
 			});
 
 			rows.push(row);
 		}
 
-		//rows.unshift(registerRow);
-
-		Ti.API.info(JSON.stringify(rows));
-
-		var table_view = Titanium.UI.createTableView({
-			data : rows,
-			style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-			headerView : tableHeader,
-			backgroundImage : '../images/background-notile.png'
-		});
-
-		table_view.addEventListener('click', function(e) {
-			var prefs = db.getUserPrefs();
-
-			// event data
-			var site_info = information[e.index];
-
-			var info_detail_win = Titanium.UI.createWindow({
-				title : 'Info',
-				barColor : '#4a85c8'
-			});
-
-			var info_detail_data = [];
-
-			var descriptionRow = Titanium.UI.createTableViewRow({
-				height : 'auto',
-			});
-
-			var infoDescriptionView = Ti.UI.createWebView({
-				html : '<html><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"></head><body style=\"font-family: Helvetica;font-size:14px;\"> ' + site_info.body + '</body></html>',
-				top : 5,
-				bottom : 15,
-				left : 12,
-				right : 12,
-				height : 500
-			});
-
-			descriptionRow.add(infoDescriptionView);
-			info_detail_data.push(descriptionRow);
-
-			//create the event detail view.
-			var info_detail_view = Titanium.UI.createTableView({
-				data : info_detail_data,
-				style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
-				backgroundImage : '../images/background-notile.png'
-			});
-
-			info_detail_win.add(info_detail_view);
-
-			if(e.index != 0) {
-				Titanium.UI.currentTab.open(info_detail_win, {
-					animated : true
-				});
-			}
-
-			if(e.index == 0) {
-				//Ti.API.info("CLINT " + prefs.school_abbr);
-				if(prefs.school_abbr == 'CC') {
-					Ti.Platform.openURL('https://alumni.college.columbia.edu/reunion/register/home');
-				}
-				if(prefs.school_abbr == 'SEAS') {
-					Ti.Platform.openURL('https://alumni.engineering.columbia.edu/reunion/register/home');
-				}
-				if(prefs.school_abbr == 'GS') {
-					Ti.Platform.openURL('https://alumni.gs.columbia.edu/reunion/register/home');
-				}
-
-			}
-
-		});
-		return table_view;
+		return rows;
 	}
 
-	var settings_win = Titanium.UI.createWindow({
-		title : 'Settings',
-		backgroundColor : '#A6B7C8',
-		statusBarHidden : true,
-		tabBarHidden : true,
-		modal : true,
-		url : "settings.js"
-	});
+	tableview.addEventListener('click', function(e) {
 
-	var settings_button = Ti.UI.createButton({
-		title : "settings",
-		image : "../images/settings-icon.png",
-		width : 5,
-		opacity : 0.2,
-		color : '#A49BBA'
-	});
+		var prefs = db.getUserPrefs();
+		var prefix_url;
 
-	win.setRightNavButton(settings_button);
+		if(prefs.school_abbr == 'CC') {
+			prefix_url = 'https://alumni.college.columbia.edu/reunion/node/';
+		}
+		if(prefs.school_abbr == 'SEAS') {
+			prefix_url = 'https://alumni.engineering.columbia.edu/reunion/node/';
+		}
+		if(prefs.school_abbr == 'GS') {
+			prefix_url = 'https://alumni.gs.columbia.edu/reunion/node/';
+		}
+
+		var link_win = Ti.UI.createWindow({
+			title : e.row.node_title,
+			barColor : '#4a85c8'
+		});
+
+		var webview = Ti.UI.createWebView();
+
+		if(e.row.node) {
+			webview.url = prefix_url + e.row.node;
+		}
+
+		//Ti.API.info('https://alumni.college.columbia.edu/reunion/node/' + e.row.node);
+		
+		link_win.add(webview);
+		win.tab.open(link_win);
+
+		if(e.index == 0) {
+			if(prefs.school_abbr == 'CC') {
+				Ti.Platform.openURL('https://alumni.college.columbia.edu/reunion/register/home');
+			}
+			if(prefs.school_abbr == 'SEAS') {
+				Ti.Platform.openURL('https://alumni.engineering.columbia.edu/reunion/register/home');
+			}
+			if(prefs.school_abbr == 'GS') {
+				Ti.Platform.openURL('https://alumni.gs.columbia.edu/reunion/register/home');
+			}
+		}
+	});
 
 	settings_button.addEventListener('click', function() {
 		settings_win.open();
 	});
+
+	win.setRightNavButton(settings_button);
+	tableHeader.add(logo, schoolLabel, yearLabel, reunionEventLabel, dateLabel);
+	win.add(tableview);
+	activity_indicator.view.show();
+	win.add(activity_indicator.view);
+
 });
