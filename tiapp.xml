@@ -9,7 +9,7 @@
         <target device="blackberry">false</target>
     </deployment-targets>
     <id>Reunion</id>
-    <name>Reunion 2012</name>
+    <name>Reunion</name>
     <version>1.0</version>
     <publisher>hcnewsom</publisher>
     <url>http://</url>
