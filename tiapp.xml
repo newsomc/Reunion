@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ti:app xmlns:ti="http://ti.appcelerator.org">
-    <sdk-version>1.8.1</sdk-version>
+    <sdk-version>1.8.2</sdk-version>
     <deployment-targets>
         <target device="mobileweb">false</target>
         <target device="iphone">true</target>
@@ -11,10 +11,10 @@
     <id>Reunion</id>
     <name>Reunion</name>
     <version>1.0</version>
-    <publisher>hcnewsom</publisher>
-    <url>http://</url>
+    <publisher>CCIT</publisher>
+    <url>http://ccit.college.columbia.edu</url>
     <description>not specified</description>
-    <copyright>2011 by hcnewsom</copyright>
+    <copyright>CCIT 2012</copyright>
     <icon>appicon.png</icon>
     <persistent-wifi>false</persistent-wifi>
     <prerendered-icon>false</prerendered-icon>

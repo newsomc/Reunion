@@ -1,7 +1,7 @@
 var init = ( function() {
-	
+
 	var elements = {};
-	
+
 	elements.buildTabs = function() {
 		var tabData = [{
 			title : 'Info',
@@ -40,16 +40,28 @@ var init = ( function() {
 			}));
 		}
 		tabGroup.open();
-		//tabGroup.setActiveTab(0);
 		win.open();
-		
 	}
-	
-	elements.isFirstTimeToLoad = function(){
+
+	elements.isFirstTimeToLoad = function() {
 		var firstTime = db.isFirstTime();
-		
+
 		var first_time_window = Titanium.UI.createWindow({
-			//backgroundImage : 'images/Default.png'
+			backgroundImage : 'images/Default.png'
+		});
+
+		var activityIndicator = Titanium.UI.createActivityIndicator({
+			height : '100%',
+			width : '100%',
+			style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
+			font : {
+				fontFamily : 'Helvetica Neue',
+				fontSize : 15,
+				fontWeight : 'bold'
+			},
+			backgroundColor : '#000',
+			opacity : 0.8,
+			color : 'white',
 		});
 
 		var tr = Titanium.UI.create2DMatrix();
@@ -142,29 +154,49 @@ var init = ( function() {
 		});
 
 		confirm_button.addEventListener('click', function() {
-
+			first_time_window.fireEvent('showAct');
 			confirm_button.backgroundColor = '#7EA0C3';
 			confirm_button.color = 'black';
-			db.storeSchoolCohortYear(picker.view.getSelectedRow(1).title, 
-									 picker.view.getSelectedRow(0).title, 
-									 picker.view.getSelectedRow(0).school_abbr, 
-									 picker.view.getSelectedRow(0).cohort_prefix);
+			db.storeSchoolCohortYear(picker.view.getSelectedRow(1).title, picker.view.getSelectedRow(0).title, picker.view.getSelectedRow(0).school_abbr, picker.view.getSelectedRow(0).cohort_prefix);
+			//store objects!
 
-			first_time_window.close({
-				transition : Titanium.UI.iPhone.AnimationStyle.CURL_UP
-			});
-			elements.buildTabs();
+			persist.updateAttendeesByClass(picker.view.getSelectedRow(0).school_abbr);
+			persist.updateAttendeesByClassYear(picker.view.getSelectedRow(0).school_abbr + '/' + picker.view.getSelectedRow(1).title);
+			persist.updateScheduleByClass(picker.view.getSelectedRow(0).school_abbr + '/' + picker.view.getSelectedRow(0).cohort_prefix + picker.view.getSelectedRow(1).title);
+			persist.updateScheduleByRegistrant('skip-request');
+
+			first_time_window.fireEvent('endAct');
 		});
 
+		first_time_window.addEventListener('showAct', function() {
+			confirm_button.enabled = false;
+			confirm_button.hide();
+			activityIndicator.show();
+		});
+
+		first_time_window.addEventListener('endAct', function() {
+			t = 0;
+			timer = setInterval(function() {
+				t++;
+				Ti.API.info(t);
+				if(t == 8) {
+					activityIndicator.hide();
+					first_time_window.close({
+						transition : Titanium.UI.iPhone.AnimationStyle.CURL_UP
+					});
+
+					elements.buildTabs();
+					clearInterval(timer);
+				}
+			}, 1000);
+		});
 		if(firstTime == true) {
 			first_time_window.add(picker_view);
-			first_time_window.add(combo_box);
+			first_time_window.add(combo_box, activityIndicator);
 			first_time_window.open();
 		} else {
 			this.buildTabs();
-		}		
+		}
 	}
-
 	return elements;
 }());
-

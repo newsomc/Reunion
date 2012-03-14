@@ -12,10 +12,22 @@ var settingsScreen = ( function() {
 		screen.win = Titanium.UI.currentWindow;
 		var reg_code = db.getRegCode();
 		var prefs = db.getUserPrefs();
-		
+
 		//initialize array that will hold custom field values.
 		var field_values = [];
-		screen.activityIndicator = new uiElements.ActivityIndicator();
+		var activityIndicator = Titanium.UI.createActivityIndicator({
+			height : '100%',
+			width : '100%',
+			style : Titanium.UI.iPhone.ActivityIndicatorStyle.PLAIN,
+			font : {
+				fontFamily : 'Helvetica Neue',
+				fontSize : 15,
+				fontWeight : 'bold'
+			},
+			backgroundColor : '#000',
+			opacity : 0.5,
+			color : 'white',
+		});
 
 		var schoolYearRow = Titanium.UI.createTableViewRow({
 			height : 46,
@@ -83,11 +95,17 @@ var settingsScreen = ( function() {
 		// zero out field on focus.
 		regCodeData.addEventListener('focus', function() {
 			regCodeData.value = '';
-
 		});
-		
+
 		regCodeData.addEventListener('return', function() {
-			persist.updateScheduleByRegistrant(regCodeData.value);
+			screen.win.fireEvent('showAct');
+			if(regCodeData.value == ''){
+				Ti.API.info('you did it!');
+				persist.updateScheduleByRegistrant('skip-request');
+			}else{
+				persist.updateScheduleByRegistrant(regCodeData.value);
+			}
+			screen.win.fireEvent('endAct');
 		});
 		// add values to rows.
 		schoolYearRow.add(schoolYearLabel);
@@ -130,14 +148,35 @@ var settingsScreen = ( function() {
 
 		var done = new reunionPicker.Done({
 			click : function() {
+				screen.win.fireEvent('showAct');
 				picker_view.animate(slide_out);
 				db.updateYearSchool(picker.view.getSelectedRow(1).title, picker.view.getSelectedRow(0).title, picker.view.getSelectedRow(0).school_abbr, picker.view.getSelectedRow(0).cohort_prefix);
 				persist.updateScheduleByClass(picker.view.getSelectedRow(0).school_abbr + '/' + picker.view.getSelectedRow(0).cohort_prefix + picker.view.getSelectedRow(1).title);
 				persist.updateAttendeesByClass(picker.view.getSelectedRow(0).school_abbr);
 				persist.updateAttendeesByClassYear(picker.view.getSelectedRow(0).school_abbr + '/' + picker.view.getSelectedRow(1).title);
+				
+				screen.win.fireEvent('endAct');
 			}
 		});
 
+		screen.win.addEventListener('showAct', function() {
+			settings_done.enabled = false;
+			activityIndicator.show();
+		});
+
+		screen.win.addEventListener('endAct', function() {
+			t = 0;
+			timer = setInterval(function() {
+				t++;
+				Ti.API.info(t);
+				if(t == 5) {
+					activityIndicator.hide();
+					settings_done.enabled = true;
+					clearInterval(timer);
+				}
+			}, 1000);
+		});
+		
 		var cancel = new reunionPicker.Cancel({
 			click : function() {
 				picker_view.animate(slide_out);
@@ -160,6 +199,7 @@ var settingsScreen = ( function() {
 
 		settings_done.addEventListener('click', function() {
 			if(regCodeData.value == '') {
+				persist.updateScheduleByRegistrant('skip-request');
 				alert('You may add a registration code to retrive your schedule. Check your registration reciept for your code.');
 				screen.win.close();
 			} else {
@@ -173,9 +213,8 @@ var settingsScreen = ( function() {
 				picker_view.animate(slide_in);
 			}
 		});
-		
 		// build display
-		screen.win.add(tableView, picker_view, screen.activityIndicator.view);
+		screen.win.add(tableView, picker_view, activityIndicator);
 
 		//Set picker to current user prefs.
 		screen.win.addEventListener('open', function(e) {

@@ -62,7 +62,7 @@ var attendeesScreen = ( function() {
 			screen.tableview = Titanium.UI.createTableView({
 				top : 39,
 				search : search,
-				style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
+				//style : Titanium.UI.iPhone.TableViewStyle.GROUPED,
 				backgroundImage : '../images/background-notile.png'
 			});
 

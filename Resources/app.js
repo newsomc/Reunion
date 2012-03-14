@@ -1,7 +1,5 @@
-Ti.include('db/db.js','ui/ui.js','ui/picker.js', 'network/network.js','db/persistData.js');
+Ti.include('db/db.js','ui/init.js','ui/picker.js', 'network/network.js','db/persistData.js');
+//db.deleteAll();
 init.isFirstTimeToLoad();
-persist.saveAttendeesByClass();
-persist.saveAttendeesByClassYear();
-persist.saveScheduleByClass();
-persist.saveScheduleByRegistrant();
+
 

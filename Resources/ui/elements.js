@@ -17,7 +17,6 @@ var uiElements = ( function() {
 			opacity : 0.5,
 			borderRadius : 5,
 			color : 'white',
-			message : 'Loading...',
 		});
 
 	};

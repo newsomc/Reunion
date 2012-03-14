@@ -302,13 +302,17 @@ var scheduleScreen = ( function() {
 	};
 	
 	screen.putData = function(my_property){
+		Ti.API.info('Property! ' + my_property);
 		var json_data = Titanium.App.Properties.getString(my_property);
 		var my_data = JSON.parse(json_data);
 		var curr_tab = Titanium.App.Properties.getInt("bar_setting", 0);
+		if(!my_data){
+			screen.emptyLabel.view.setText('There are currently no events scheduled. Please check again soon!');
+		}
 		if(my_data.schedule){
 			var my_rows = screen.buildTableRows(my_data.schedule);
 		}
-		if (my_data.schedule.length == 0){
+		if (my_data.schedule.length == 0 || !my_data.schedule){
 			if(curr_tab = 0){
 			 	screen.emptyLabel.view.setText('There are currently no events scheduled for your cohort. Please check again soon!');		
 			}		
@@ -438,20 +442,4 @@ var scheduleScreen = ( function() {
 }());
 
 Ti.include('../db/db.js', '../ui/picker.js', '../ui/elements.js', '../network/network.js');
-
 scheduleScreen.build();
-
-scheduleScreen.win.addEventListener('focus', function(){
-	//Ti.API.info('FOCUSED!');
-/*		
-	var curr_tab = Titanium.App.Properties.getInt("bar_setting", 0);
-	scheduleScreen.activityIndicator.view.show();
-	if(curr_tab == 0){
-		Ti.API.info('tryin dude!');
-		scheduleScreen.putData('schedule_class');
-		scheduleScreen.activityIndicator.view.hide();		
-	}else{
-		scheduleScreen.putData('schedule_registrant');
-		scheduleScreen.activityIndicator.view.hide();
-	}*/	
-});

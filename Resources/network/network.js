@@ -3,18 +3,21 @@
  * 02-08-2012
  * cn2284@columbia.edu
  */
+
 function getReunionData(url_params, _success, _error) {
 
 	var xhr = Ti.Network.createHTTPClient();
 
 	if(Ti.Network.online) {
 		xhr.onload = function(e) {
+
 			if( typeof _success == "function") {
 				return _success(this.responseText);
 			}
 		};
 
 		xhr.onerror = function(e) {
+
 			if(_error) {
 				_error(e);
 				alert('There was an error with this request. Please try again later.');
@@ -29,9 +32,6 @@ function getReunionData(url_params, _success, _error) {
 		//Ti.API.info('https://ccit.college.columbia.edu/reunion-base/service' + url_params);
 		xhr.send();
 	} else {
-		//Ti.include('../ui/elements.js');
-		//var emptyLabel = new uiElements.EmptyLabel();
-		//emptyLabel.setText('Please check your network connection.');
-		alert('Your device is not online.');
+		alert('Currently unable to establish a network connection.');
 	}
 }
